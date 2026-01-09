@@ -78,41 +78,21 @@ const Contact = () => {
                 ))}
               </div>
 
-              {/* Map Placeholder */}
-              <a 
-                href="https://maps.app.goo.gl/8hh9HaTBbeTuQvdP6" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="relative mt-8 block group cursor-pointer"
-              >
-                <div className="glass rounded-2xl p-8 h-48 flex flex-col items-center justify-center overflow-hidden group-hover:border-primary/50 transition-all duration-300">
-                  <div className="absolute inset-0 opacity-20">
-                    <div className="absolute top-4 left-8 w-24 h-px bg-primary/50"></div>
-                    <div className="absolute top-8 left-4 w-32 h-px bg-primary/30"></div>
-                    <div className="absolute top-16 left-12 w-20 h-px bg-primary/40"></div>
-                    <div className="absolute top-24 left-6 w-28 h-px bg-primary/20"></div>
-                    <div className="absolute top-32 left-16 w-16 h-px bg-primary/50"></div>
-                    <div className="absolute top-4 right-8 w-20 h-px bg-primary/30"></div>
-                    <div className="absolute top-12 right-4 w-24 h-px bg-primary/40"></div>
-                    <div className="absolute top-20 right-12 w-18 h-px bg-primary/20"></div>
-                    <div className="absolute top-28 right-6 w-22 h-px bg-primary/50"></div>
-                    <div className="absolute left-8 top-4 w-px h-20 bg-primary/30"></div>
-                    <div className="absolute left-16 top-8 w-px h-24 bg-primary/40"></div>
-                    <div className="absolute left-24 top-2 w-px h-28 bg-primary/20"></div>
-                    <div className="absolute right-8 top-6 w-px h-22 bg-primary/30"></div>
-                    <div className="absolute right-16 top-4 w-px h-26 bg-primary/40"></div>
-                    <div className="absolute right-24 top-10 w-px h-18 bg-primary/20"></div>
-                  </div>
-                  <div className="relative z-10 text-center">
-                    <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-3 glow-primary-sm group-hover:bg-primary/30 transition-colors">
-                      <MapPin className="w-6 h-6 text-primary" />
-                    </div>
-                    <p className="text-lg font-semibold text-foreground">Basecamp Kami</p>
-                    <p className="text-sm text-muted-foreground">Depok, Jawa Barat, Indonesia</p>
-                    <p className="text-primary text-sm mt-2 opacity-0 group-hover:opacity-100 transition-opacity">Lihat di Google Maps →</p>
-                  </div>
+              {/* Google Maps Embed */}
+              <div className="relative mt-8">
+                <div className="glass rounded-2xl p-2 overflow-hidden">
+                  <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.2415692469544!2d106.84445269999999!3d-6.3627739!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69ed6178a2b32f%3A0x20d7938791acfd4a!2sSTT%20Terpadu%20Nurul%20Fikri%20(Kampus%20A%20-%20Sekretariat)!5e0!3m2!1sid!2sid!4v1767946412059!5m2!1sid!2sid" 
+                    width="100%" 
+                    height="200" 
+                    style={{ border: 0, borderRadius: '0.75rem' }}
+                    allowFullScreen
+                    loading="lazy" 
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Lokasi NFDigitalStore"
+                  />
                 </div>
-              </a>
+              </div>
             </div>
 
             {/* Right Side - Form */}
