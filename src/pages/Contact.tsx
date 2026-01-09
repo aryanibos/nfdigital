@@ -3,13 +3,7 @@ import { Mail, Phone, MapPin, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -41,12 +35,12 @@ const Contact = () => {
     {
       icon: Phone,
       label: "WhatsApp",
-      value: "+62 812-XXXX-XXXX (Fast Response)",
+      value: "+62 813-1715-2044",
     },
     {
       icon: MapPin,
       label: "Alamat",
-      value: "Jl. Kreativitas Digital No. 88, Jakarta Selatan, Indonesia.",
+      value: "Jl. Situ Indah 116, Tugu, Cimanggis, Depok, Jawa Barat.",
     },
   ];
 
@@ -64,17 +58,15 @@ const Contact = () => {
                   Yuk, <span className="text-gradient">Ngobrol!</span>
                 </h1>
                 <p className="text-lg text-muted-foreground max-w-md">
-                  Punya pertanyaan soal produk, kendala download, atau mau request template khusus? Tim NFDigitalStore siap bantu.
+                  Punya pertanyaan soal produk, kendala download, atau mau request template khusus? Tim NFDigitalStore
+                  siap bantu.
                 </p>
               </div>
 
               {/* Contact Details */}
               <div className="space-y-6">
                 {contactDetails.map((detail, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start gap-4 group"
-                  >
+                  <div key={index} className="flex items-start gap-4 group">
                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                       <detail.icon className="w-5 h-5 text-primary" />
                     </div>
@@ -111,7 +103,7 @@ const Contact = () => {
                       <MapPin className="w-6 h-6 text-primary" />
                     </div>
                     <p className="text-lg font-semibold text-foreground">Basecamp Kami</p>
-                    <p className="text-sm text-muted-foreground">Jakarta Selatan, Indonesia</p>
+                    <p className="text-sm text-muted-foreground">Depok, Jawa Barat, Indonesia</p>
                   </div>
                 </div>
               </div>
@@ -120,52 +112,38 @@ const Contact = () => {
             {/* Right Side - Form */}
             <div className="animate-fade-up animation-delay-200">
               <div className="glass rounded-2xl p-6 md:p-8">
-                <h2 className="text-2xl font-bold text-foreground mb-6">
-                  Kirim Pesan
-                </h2>
+                <h2 className="text-2xl font-bold text-foreground mb-6">Kirim Pesan</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">
-                      Nama Lengkap
-                    </label>
+                    <label className="text-sm font-medium text-foreground">Nama Lengkap</label>
                     <Input
                       type="text"
                       placeholder="Masukkan nama lengkap"
                       value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
                       className="rounded-xl bg-secondary/50 border-border focus:border-primary focus:ring-primary/20 h-12"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">
-                      Email
-                    </label>
+                    <label className="text-sm font-medium text-foreground">Email</label>
                     <Input
                       type="email"
                       placeholder="email@example.com"
                       value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       required
                       className="rounded-xl bg-secondary/50 border-border focus:border-primary focus:ring-primary/20 h-12"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">
-                      Topik
-                    </label>
+                    <label className="text-sm font-medium text-foreground">Topik</label>
                     <Select
                       value={formData.topic}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, topic: value })
-                      }
+                      onValueChange={(value) => setFormData({ ...formData, topic: value })}
                     >
                       <SelectTrigger className="rounded-xl bg-secondary/50 border-border focus:border-primary focus:ring-primary/20 h-12">
                         <SelectValue placeholder="Pilih topik" />
@@ -180,15 +158,11 @@ const Contact = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">
-                      Pesan
-                    </label>
+                    <label className="text-sm font-medium text-foreground">Pesan</label>
                     <Textarea
                       placeholder="Tulis pesanmu di sini..."
                       value={formData.message}
-                      onChange={(e) =>
-                        setFormData({ ...formData, message: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       required
                       className="rounded-xl bg-secondary/50 border-border focus:border-primary focus:ring-primary/20 min-h-[140px] resize-none"
                     />
