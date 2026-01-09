@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingCart, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logo from "@/assets/nfdigitalstore-logo.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,8 +20,9 @@ const Navbar = () => {
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-xl lg:text-2xl font-extrabold text-foreground">
+          <Link to="/" className="flex items-center gap-3">
+            <img src={logo} alt="NFDigitalStore" className="h-10 w-10 rounded-lg" />
+            <span className="text-xl lg:text-2xl font-extrabold text-foreground hidden sm:block">
               NF<span className="text-primary">Digital</span>Store
             </span>
           </Link>
