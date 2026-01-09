@@ -11,7 +11,7 @@ const Footer = () => {
               NF<span className="text-primary">Digital</span>Store
             </span>
             <p className="text-sm text-muted-foreground mt-2">
-              © 2024 NFDigitalStore. Dibuat dengan kreativitas tanpa batas.
+              © 2026 NFDigitalStore.
             </p>
           </div>
 
