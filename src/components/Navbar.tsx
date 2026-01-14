@@ -1,18 +1,26 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingCart, Menu, X } from "lucide-react";
+import { Menu, X, FileText, Image, Video, Code, Palette, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/nfdigital-logo.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [cartCount] = useState(0);
 
   const navLinks = [
     { label: "Beranda", href: "/" },
     { label: "Produk", href: "/#produk" },
     { label: "Kategori", href: "/#kategori" },
+    { label: "Tentang", href: "/#tentang" },
     { label: "Kontak", href: "/kontak" },
+  ];
+
+  const categories = [
+    { label: "Template", icon: FileText, href: "/#template" },
+    { label: "E-Book", icon: BookOpen, href: "/#ebook" },
+    { label: "Desain", icon: Palette, href: "/#desain" },
+    { label: "Video", icon: Video, href: "/#video" },
+    { label: "Kode", icon: Code, href: "/#kode" },
   ];
 
   return (
@@ -27,7 +35,8 @@ const Navbar = () => {
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link
                 key={link.label}
@@ -39,35 +48,32 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Cart Button */}
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="hidden sm:flex items-center gap-2 rounded-full border-border hover:border-primary hover:text-primary transition-all"
-            >
-              <ShoppingCart className="w-4 h-4" />
-              <span>Keranjang</span>
-              {cartCount > 0 && (
-                <span className="bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
-            </Button>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-2 text-foreground hover:text-primary transition-colors"
-            >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+          {/* Category Icons - Desktop */}
+          <div className="hidden md:flex items-center gap-2">
+            {categories.map((cat) => (
+              <Link
+                key={cat.label}
+                to={cat.href}
+                className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 group"
+                title={cat.label}
+              >
+                <cat.icon className="w-5 h-5" />
+              </Link>
+            ))}
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="lg:hidden p-2 text-foreground hover:text-primary transition-colors"
+          >
+            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden py-4 border-t border-border animate-fade-in">
+          <div className="lg:hidden py-4 border-t border-border animate-fade-in">
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
                 <Link
@@ -79,14 +85,24 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center justify-center gap-2 rounded-full border-border hover:border-primary hover:text-primary transition-all w-full"
-              >
-                <ShoppingCart className="w-4 h-4" />
-                <span>Keranjang</span>
-              </Button>
+              
+              {/* Category Icons - Mobile */}
+              <div className="pt-4 border-t border-border">
+                <p className="text-xs text-muted-foreground mb-3">Kategori Produk</p>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat.label}
+                      to={cat.href}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <cat.icon className="w-4 h-4" />
+                      <span className="text-sm">{cat.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
