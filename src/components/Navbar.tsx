@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, FileText, Image, Video, Code, Palette, BookOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
 import logo from "@/assets/nfdigital-logo.png";
 
 const Navbar = () => {
@@ -10,17 +9,19 @@ const Navbar = () => {
   const navLinks = [
     { label: "Beranda", href: "/" },
     { label: "Produk", href: "/#produk" },
-    { label: "Kategori", href: "/#kategori" },
     { label: "Tentang", href: "/#tentang" },
     { label: "Kontak", href: "/kontak" },
   ];
 
-  const categories = [
-    { label: "Template", icon: FileText, href: "/#template" },
-    { label: "E-Book", icon: BookOpen, href: "/#ebook" },
-    { label: "Desain", icon: Palette, href: "/#desain" },
-    { label: "Video", icon: Video, href: "/#video" },
-    { label: "Kode", icon: Code, href: "/#kode" },
+  const productLinks = [
+    { label: "Template Digital", href: "/#produk" },
+    { label: "E-Book & Panduan", href: "/#produk" },
+    { label: "Aset Desain", href: "/#produk" },
+    { label: "Video & Kursus", href: "/#produk" },
+    { label: "Source Code", href: "/#produk" },
+    { label: "UI/UX Kit", href: "/#produk" },
+    { label: "Preset & Filter", href: "/#produk" },
+    { label: "Font & Typography", href: "/#produk" },
   ];
 
   return (
@@ -48,16 +49,15 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Category Icons - Desktop */}
-          <div className="hidden md:flex items-center gap-2">
-            {categories.map((cat) => (
+          {/* Product Links - Desktop */}
+          <div className="hidden xl:flex items-center gap-1">
+            {productLinks.slice(0, 4).map((link) => (
               <Link
-                key={cat.label}
-                to={cat.href}
-                className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 group"
-                title={cat.label}
+                key={link.label}
+                to={link.href}
+                className="px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200"
               >
-                <cat.icon className="w-5 h-5" />
+                {link.label}
               </Link>
             ))}
           </div>
@@ -86,19 +86,18 @@ const Navbar = () => {
                 </Link>
               ))}
               
-              {/* Category Icons - Mobile */}
+              {/* Product Links - Mobile */}
               <div className="pt-4 border-t border-border">
-                <p className="text-xs text-muted-foreground mb-3">Kategori Produk</p>
+                <p className="text-xs text-muted-foreground mb-3">Produk Digital</p>
                 <div className="flex flex-wrap gap-2">
-                  {categories.map((cat) => (
+                  {productLinks.map((link) => (
                     <Link
-                      key={cat.label}
-                      to={cat.href}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200"
+                      key={link.label}
+                      to={link.href}
+                      className="px-3 py-2 rounded-lg text-xs font-medium bg-card border border-border text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-200"
                       onClick={() => setIsOpen(false)}
                     >
-                      <cat.icon className="w-4 h-4" />
-                      <span className="text-sm">{cat.label}</span>
+                      {link.label}
                     </Link>
                   ))}
                 </div>
