@@ -8,20 +8,23 @@ const Navbar = () => {
 
   const navLinks = [
     { label: "Beranda", href: "/" },
-    { label: "Produk", href: "/#produk" },
-    { label: "Tentang", href: "/#tentang" },
+    { label: "Produk", href: "/produk" },
     { label: "Kontak", href: "/kontak" },
   ];
 
   const productLinks = [
-    { label: "Template Digital", href: "/#produk" },
-    { label: "E-Book & Panduan", href: "/#produk" },
-    { label: "Aset Desain", href: "/#produk" },
-    { label: "Video & Kursus", href: "/#produk" },
-    { label: "Source Code", href: "/#produk" },
-    { label: "UI/UX Kit", href: "/#produk" },
-    { label: "Preset & Filter", href: "/#produk" },
-    { label: "Font & Typography", href: "/#produk" },
+    { label: "Template Digital", href: "/produk?cat=Template" },
+    { label: "E-Book & Panduan", href: "/produk?cat=E-Book+%26+Panduan" },
+    { label: "Aset Desain", href: "/produk?cat=Aset+Desain" },
+    { label: "Video & Kursus", href: "/produk?cat=Video+%26+Kursus" },
+    { label: "Source Code", href: "/produk?cat=Source+Code" },
+    { label: "UI/UX Kit", href: "/produk?cat=UI%2FUX+Kit" },
+    { label: "Preset & Filter", href: "/produk?cat=Preset+%26+Filter" },
+    { label: "Font & Typography", href: "/produk?cat=Font+%26+Typography" },
+    { label: "Notion Template", href: "/produk?cat=Template" },
+    { label: "Figma Resources", href: "/produk?cat=UI%2FUX+Kit" },
+    { label: "Canva Template", href: "/produk?cat=Template" },
+    { label: "Social Media Pack", href: "/produk?cat=Template" },
   ];
 
   return (
