@@ -49,18 +49,7 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Product Links - Desktop */}
-          <div className="hidden xl:flex items-center gap-1">
-            {productLinks.slice(0, 4).map((link) => (
-              <Link
-                key={link.label}
-                to={link.href}
-                className="px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
+          {/* Product Links - Hidden on Desktop, shown only on mobile */}
 
           {/* Mobile Menu Button */}
           <button
