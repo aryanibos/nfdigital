@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { Search, X } from "lucide-react";
 import ProductCard from "./ProductCard";
 import notionPlanner from "@/assets/notion-planner.jpg";
 import lightroomPresets from "@/assets/lightroom-presets.jpg";
@@ -72,10 +73,61 @@ const categories = ["Semua", "Template", "E-Book", "Desain", "Video", "Kode"];
 
 const ProductGrid = () => {
   const [activeCategory, setActiveCategory] = useState("Semua");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
-  const filteredProducts = activeCategory === "Semua" 
-    ? products 
-    : products.filter(product => product.category === activeCategory);
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Get autocomplete suggestions
+  const suggestions = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const query = searchQuery.toLowerCase();
+    return products
+      .filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        p.description.toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query)
+      )
+      .slice(0, 5);
+  }, [searchQuery]);
+
+  // Filter products by category and search
+  const filteredProducts = useMemo(() => {
+    let filtered = activeCategory === "Semua" 
+      ? products 
+      : products.filter(product => product.category === activeCategory);
+    
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        p.description.toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query)
+      );
+    }
+    
+    return filtered;
+  }, [activeCategory, searchQuery]);
+
+  const handleSuggestionClick = (productName: string) => {
+    setSearchQuery(productName);
+    setShowSuggestions(false);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    setShowSuggestions(false);
+  };
 
   return (
     <section id="produk" className="py-20 lg:py-32 relative">
@@ -94,12 +146,64 @@ const ProductGrid = () => {
           </p>
         </div>
 
+        {/* Search Bar with Autocomplete */}
+        <div ref={searchRef} className="max-w-md mx-auto mb-8 relative">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onFocus={() => setShowSuggestions(true)}
+              placeholder="Cari produk digital..."
+              className="w-full pl-12 pr-10 py-3.5 rounded-full bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300"
+            />
+            {searchQuery && (
+              <button
+                onClick={clearSearch}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+          
+          {/* Autocomplete Suggestions */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-2xl shadow-xl overflow-hidden z-20 animate-fade-in">
+              {suggestions.map((product, index) => (
+                <button
+                  key={`${product.name}-${index}`}
+                  onClick={() => handleSuggestionClick(product.name)}
+                  className="w-full px-4 py-3 flex items-center gap-3 hover:bg-primary/10 transition-colors text-left"
+                >
+                  <img 
+                    src={product.image} 
+                    alt={product.name} 
+                    className="w-10 h-10 rounded-lg object-cover"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{product.name}</p>
+                    <p className="text-xs text-muted-foreground">{product.category}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Category Filter */}
         <div className="flex flex-wrap justify-center gap-3 mb-12">
           {categories.map((category) => (
             <button
               key={category}
-              onClick={() => setActiveCategory(category)}
+              onClick={() => {
+                setActiveCategory(category);
+                setSearchQuery("");
+              }}
               className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
                 activeCategory === category
                   ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
