@@ -22,7 +22,6 @@ const allProducts = [
     description: "Template Notion all-in-one untuk mengatur jadwal dan target hidupmu.",
     image: notionPlanner,
     featured: true,
-    price: "Rp 99.000",
   },
   {
     id: "ultimate-lightroom-presets",
@@ -32,7 +31,6 @@ const allProducts = [
     description: "50+ Preset estetik untuk foto Instagram yang lebih kece.",
     image: lightroomPresets,
     featured: false,
-    price: "Rp 75.000",
   },
   {
     id: "ebook-jago-freelance",
@@ -42,7 +40,6 @@ const allProducts = [
     description: "Panduan lengkap memulai karir freelance dari nol hingga cuan.",
     image: ebookFreelance,
     featured: false,
-    price: "Rp 49.000",
   },
   {
     id: "saas-ui-kit-figma",
@@ -52,7 +49,6 @@ const allProducts = [
     description: "Kumpulan komponen UI modern untuk desain aplikasi web.",
     image: saasUiKit,
     featured: true,
-    price: "Rp 149.000",
   },
   {
     id: "social-media-templates",
@@ -62,7 +58,6 @@ const allProducts = [
     description: "100+ template Instagram, TikTok, dan YouTube siap pakai.",
     image: socialMediaTemplates,
     featured: false,
-    price: "Rp 89.000",
   },
   {
     id: "video-editing-course",
@@ -72,7 +67,6 @@ const allProducts = [
     description: "Kursus lengkap editing video dari dasar hingga mahir.",
     image: videoCourse,
     featured: false,
-    price: "Rp 199.000",
   },
   {
     id: "react-component-library",
@@ -82,7 +76,6 @@ const allProducts = [
     description: "50+ komponen React siap pakai untuk proyek web modern.",
     image: reactComponents,
     featured: false,
-    price: "Rp 129.000",
   },
   {
     id: "digital-marketing-ebook",
@@ -92,7 +85,6 @@ const allProducts = [
     description: "Strategi pemasaran digital untuk bisnis online sukses.",
     image: marketingEbook,
     featured: false,
-    price: "Rp 59.000",
   },
   {
     id: "instagram-story-templates",
@@ -102,7 +94,6 @@ const allProducts = [
     description: "50+ template story Instagram yang aesthetic dan engaging.",
     image: socialMediaTemplates,
     featured: false,
-    price: "Rp 45.000",
   },
   {
     id: "figma-icon-pack",
@@ -112,7 +103,6 @@ const allProducts = [
     description: "1000+ ikon vektor premium untuk desain UI/UX modern.",
     image: saasUiKit,
     featured: true,
-    price: "Rp 79.000",
   },
   {
     id: "content-creator-bundle",
@@ -122,7 +112,6 @@ const allProducts = [
     description: "Paket lengkap untuk content creator: intro, outro, lower thirds.",
     image: videoCourse,
     featured: false,
-    price: "Rp 159.000",
   },
   {
     id: "productivity-notion-system",
@@ -132,7 +121,6 @@ const allProducts = [
     description: "Sistem produktivitas lengkap dengan habit tracker dan goal setting.",
     image: notionPlanner,
     featured: false,
-    price: "Rp 89.000",
   },
 ];
 
@@ -192,16 +180,10 @@ const Products = () => {
     }
 
     // Sort products
-    if (sortBy === "price-low") {
-      filtered = [...filtered].sort((a, b) => 
-        parseInt(a.price.replace(/\D/g, "")) - parseInt(b.price.replace(/\D/g, ""))
-      );
-    } else if (sortBy === "price-high") {
-      filtered = [...filtered].sort((a, b) => 
-        parseInt(b.price.replace(/\D/g, "")) - parseInt(a.price.replace(/\D/g, ""))
-      );
-    } else if (sortBy === "name") {
+    if (sortBy === "name") {
       filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortBy === "category") {
+      filtered = [...filtered].sort((a, b) => a.category.localeCompare(b.category));
     }
     
     return filtered;
@@ -284,7 +266,7 @@ const Products = () => {
                         <p className="text-sm font-medium text-foreground truncate">{product.name}</p>
                         <p className="text-xs text-muted-foreground">{product.category}</p>
                       </div>
-                      <span className="text-sm font-semibold text-primary">{product.price}</span>
+                      
                     </button>
                   ))}
                 </div>
@@ -323,9 +305,8 @@ const Products = () => {
                   className="px-4 py-2 rounded-lg bg-card border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                 >
                   <option value="newest">Terbaru</option>
-                  <option value="price-low">Harga Terendah</option>
-                  <option value="price-high">Harga Tertinggi</option>
                   <option value="name">Nama A-Z</option>
+                  <option value="category">Kategori</option>
                 </select>
 
                 <div className="flex items-center gap-1 p-1 bg-card border border-border rounded-lg">
@@ -411,8 +392,7 @@ const Products = () => {
                     <p className="text-sm text-muted-foreground line-clamp-1">{product.description}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold text-primary">{product.price}</p>
-                    <span className="text-xs text-muted-foreground">Lihat Detail →</span>
+                    <span className="text-sm text-primary font-medium">Lihat Detail →</span>
                   </div>
                 </Link>
               ))}
