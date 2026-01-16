@@ -1,6 +1,8 @@
+import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 
 interface ProductCardProps {
+  id: string;
   name: string;
   category: string;
   description: string;
@@ -8,10 +10,11 @@ interface ProductCardProps {
   featured?: boolean;
 }
 
-const ProductCard = ({ name, category, description, image, featured = false }: ProductCardProps) => {
+const ProductCard = ({ id, name, category, description, image, featured = false }: ProductCardProps) => {
   return (
-    <div 
-      className={`group relative bg-card rounded-2xl overflow-hidden border border-border card-hover ${
+    <Link 
+      to={`/produk/${id}`}
+      className={`group relative bg-card rounded-2xl overflow-hidden border border-border card-hover block cursor-pointer ${
         featured ? "row-span-2" : ""
       }`}
     >
@@ -28,6 +31,13 @@ const ProductCard = ({ name, category, description, image, featured = false }: P
         <Badge className="absolute top-4 left-4 bg-primary/20 text-primary border-0 backdrop-blur-sm">
           {category}
         </Badge>
+
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <span className="bg-background/90 text-foreground px-4 py-2 rounded-full text-sm font-medium transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+            Lihat Detail
+          </span>
+        </div>
       </div>
 
       {/* Content */}
@@ -39,7 +49,7 @@ const ProductCard = ({ name, category, description, image, featured = false }: P
           {description}
         </p>
       </div>
-    </div>
+    </Link>
   );
 };
 

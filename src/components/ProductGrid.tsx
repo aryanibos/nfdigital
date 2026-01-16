@@ -12,6 +12,7 @@ import marketingEbook from "@/assets/marketing-ebook.jpg";
 
 const products = [
   {
+    id: "notion-life-planner-2024",
     name: "Notion Life Planner 2024",
     category: "Template",
     description: "Template Notion all-in-one untuk mengatur jadwal dan target hidupmu.",
@@ -19,6 +20,7 @@ const products = [
     featured: true,
   },
   {
+    id: "ultimate-lightroom-presets",
     name: "Ultimate Lightroom Presets",
     category: "Desain",
     description: "50+ Preset estetik untuk foto Instagram yang lebih kece.",
@@ -26,6 +28,7 @@ const products = [
     featured: false,
   },
   {
+    id: "ebook-jago-freelance",
     name: "E-Book: Jago Freelance",
     category: "E-Book",
     description: "Panduan lengkap memulai karir freelance dari nol hingga cuan.",
@@ -33,6 +36,7 @@ const products = [
     featured: false,
   },
   {
+    id: "saas-ui-kit-figma",
     name: "SaaS UI Kit Figma",
     category: "Desain",
     description: "Kumpulan komponen UI modern untuk desain aplikasi web.",
@@ -40,6 +44,7 @@ const products = [
     featured: true,
   },
   {
+    id: "social-media-templates",
     name: "Social Media Templates",
     category: "Template",
     description: "100+ template Instagram, TikTok, dan YouTube siap pakai.",
@@ -47,6 +52,7 @@ const products = [
     featured: false,
   },
   {
+    id: "video-editing-course",
     name: "Video Editing Course",
     category: "Video",
     description: "Kursus lengkap editing video dari dasar hingga mahir.",
@@ -54,6 +60,7 @@ const products = [
     featured: false,
   },
   {
+    id: "react-component-library",
     name: "React Component Library",
     category: "Kode",
     description: "50+ komponen React siap pakai untuk proyek web modern.",
@@ -61,6 +68,7 @@ const products = [
     featured: false,
   },
   {
+    id: "digital-marketing-ebook",
     name: "Digital Marketing E-Book",
     category: "E-Book",
     description: "Strategi pemasaran digital untuk bisnis online sukses.",
