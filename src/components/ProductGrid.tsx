@@ -4,6 +4,10 @@ import notionPlanner from "@/assets/notion-planner.jpg";
 import lightroomPresets from "@/assets/lightroom-presets.jpg";
 import ebookFreelance from "@/assets/ebook-freelance.jpg";
 import saasUiKit from "@/assets/saas-ui-kit.jpg";
+import socialMediaTemplates from "@/assets/social-media-templates.jpg";
+import videoCourse from "@/assets/video-course.jpg";
+import reactComponents from "@/assets/react-components.jpg";
+import marketingEbook from "@/assets/marketing-ebook.jpg";
 
 const products = [
   {
@@ -38,28 +42,28 @@ const products = [
     name: "Social Media Templates",
     category: "Template",
     description: "100+ template Instagram, TikTok, dan YouTube siap pakai.",
-    image: notionPlanner,
+    image: socialMediaTemplates,
     featured: false,
   },
   {
     name: "Video Editing Course",
     category: "Video",
     description: "Kursus lengkap editing video dari dasar hingga mahir.",
-    image: lightroomPresets,
+    image: videoCourse,
     featured: false,
   },
   {
     name: "React Component Library",
     category: "Kode",
     description: "50+ komponen React siap pakai untuk proyek web modern.",
-    image: saasUiKit,
+    image: reactComponents,
     featured: false,
   },
   {
     name: "Digital Marketing E-Book",
     category: "E-Book",
     description: "Strategi pemasaran digital untuk bisnis online sukses.",
-    image: ebookFreelance,
+    image: marketingEbook,
     featured: false,
   },
 ];
