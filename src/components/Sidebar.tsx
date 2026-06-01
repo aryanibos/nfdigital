@@ -19,10 +19,11 @@ import ProfileModal from "./ProfileModal";
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  isDesktopOpen?: boolean;
   onOpenLogin?: (role: "mahasiswa" | "admin") => void;
 }
 
-const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
+const Sidebar = ({ isOpen, onClose, isDesktopOpen = true }: SidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -261,8 +262,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   return (
     <>
-      {/* Desktop Sidebar (Permanent) */}
-      <aside className="hidden lg:block fixed top-0 bottom-0 left-0 w-64 z-30">
+      {/* Desktop Sidebar — slides in/out smoothly */}
+      <aside className={cn(
+        "hidden lg:block fixed top-0 bottom-0 left-0 w-64 z-30 transition-transform duration-300 ease-in-out",
+        isDesktopOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
         {sidebarContent}
       </aside>
 

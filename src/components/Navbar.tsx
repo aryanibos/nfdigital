@@ -7,9 +7,10 @@ import ProfileModal from "./ProfileModal";
 
 interface NavbarProps {
   onToggleSidebar: () => void;
+  isSidebarOpen?: boolean;
 }
 
-const Navbar = ({ onToggleSidebar }: NavbarProps) => {
+const Navbar = ({ onToggleSidebar, isSidebarOpen = true }: NavbarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -56,7 +57,10 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border h-16 lg:h-20 lg:pl-64 transition-all duration-300">
+    <header className={cn(
+      "fixed top-0 left-0 right-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border h-16 lg:h-20 transition-all duration-300",
+      isSidebarOpen ? "lg:pl-64" : "lg:pl-0"
+    )}>
       <div className="h-full px-4 lg:px-8 flex items-center justify-between">
         
         {/* Left Section: Toggle & Brand */}

@@ -1,4 +1,5 @@
 import { useState, ReactNode } from "react";
+import { cn } from "@/lib/utils";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import { 
@@ -20,13 +21,15 @@ interface LayoutProps {
 }
 
 const Layout = ({ children }: LayoutProps) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);       // mobile drawer
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true); // desktop sidebar
   const [loginRole, setLoginRole] = useState<"mahasiswa" | "admin" | null>(null);
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
   const { toast } = useToast();
 
   const handleToggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+    setIsSidebarOpen(prev => !prev);           // mobile drawer
+    setIsDesktopSidebarOpen(prev => !prev);    // desktop sidebar
   };
 
   const handleOpenLogin = (role: "mahasiswa" | "admin") => {
@@ -53,17 +56,21 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
       {/* Top Navbar */}
-      <Navbar onToggleSidebar={handleToggleSidebar} />
+      <Navbar onToggleSidebar={handleToggleSidebar} isSidebarOpen={isDesktopSidebarOpen} />
 
       {/* Sidebar Navigation */}
       <Sidebar 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)} 
+        isDesktopOpen={isDesktopSidebarOpen}
         onOpenLogin={handleOpenLogin}
       />
 
       {/* Main Content Layout Wrapper */}
-      <div className="lg:pl-64 transition-all duration-300 min-h-screen flex flex-col pt-16 lg:pt-20">
+      <div className={cn(
+        "transition-all duration-300 min-h-screen flex flex-col pt-16 lg:pt-20",
+        isDesktopSidebarOpen ? "lg:pl-64" : "lg:pl-0"
+      )}>
         <main className="flex-grow">
           {children}
         </main>
