@@ -1,17 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
   ArrowRight, 
   UserPlus, 
-  BookOpen, 
-  ShieldCheck, 
-  Users, 
-  Zap, 
   FileText, 
   LayoutGrid, 
   Palette,
+  BookOpen,
   ChevronRight,
-  Sparkles
+  Wallet,
+  Users,
+  Tag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -21,6 +20,20 @@ import panduanFreelancerPemula from "@/assets/panduan-freelancer-pemula.png";
 import dashboardFinance from "@/assets/dashboard-finance.png";
 
 const Hero = () => {
+  // Dynamic stats from Admin "Statistik Home"
+  const [heroStats, setHeroStats] = useState({
+    totalDana: "Rp 12.500.000",
+    jumlahDonatur: "15",
+    kampanyeAktif: "8"
+  });
+
+  useEffect(() => {
+    const saved = localStorage.getItem("homepage_stats");
+    if (saved) {
+      try { setHeroStats(JSON.parse(saved)); } catch (e) {}
+    }
+  }, []);
+
   // Smooth scroll to products section
   const handleScrollToProducts = () => {
     const el = document.getElementById("produk");
@@ -100,31 +113,25 @@ const Hero = () => {
     }
   ];
 
-  // Micro features/milestones
-  const features = [
+  // Dynamic stats config pulled from homepage_stats localStorage
+  const statItems = [
     {
-      title: "Koleksi Berkualitas",
-      desc: "Produk digital terkurasi dengan standar terbaik.",
-      icon: BookOpen,
-      iconColor: "text-sky-400 bg-sky-500/10 border-sky-500/20"
+      key: "totalDana",
+      label: "Produk Digital",
+      value: heroStats.totalDana,
+      icon: Wallet,
     },
     {
-      title: "Aman & Terpercaya",
-      desc: "Setiap produk melalui proses verifikasi.",
-      icon: ShieldCheck,
-      iconColor: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
-    },
-    {
-      title: "Dibuat oleh Talenta",
-      desc: "Mendukung kreator lokal dan komunitas digital.",
+      key: "jumlahDonatur",
+      label: "Mahasiswa Aktif",
+      value: heroStats.jumlahDonatur,
       icon: Users,
-      iconColor: "text-amber-400 bg-amber-500/10 border-amber-500/20"
     },
     {
-      title: "Akses Instan",
-      desc: "Unduh langsung setelah pembayaran.",
-      icon: Zap,
-      iconColor: "text-violet-400 bg-violet-500/10 border-violet-500/20"
+      key: "kampanyeAktif",
+      label: "Kategori Terdaftar",
+      value: heroStats.kampanyeAktif,
+      icon: Tag,
     }
   ];
 
@@ -166,7 +173,7 @@ const Hero = () => {
             </p>
 
             {/* CTA Actions Row */}
-            <div className="flex flex-wrap items-center gap-4 mb-16">
+            <div className="flex flex-wrap items-center gap-4 mb-8">
               <Button
                 onClick={handleScrollToProducts}
                 size="lg"
@@ -186,26 +193,6 @@ const Hero = () => {
                   <UserPlus className="w-4.5 h-4.5" />
                 </Button>
               </Link>
-            </div>
-
-            {/* Trust Badges - 4 Column Layout */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-8 border-t border-border/40">
-              {features.map((feat, index) => {
-                const FeatIcon = feat.icon;
-                return (
-                  <div key={index} className="flex flex-col gap-2">
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center border ${feat.iconColor}`}>
-                      <FeatIcon className="w-5 h-5" />
-                    </div>
-                    <h4 className="text-xs sm:text-sm font-bold text-foreground mt-1">
-                      {feat.title}
-                    </h4>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground leading-normal">
-                      {feat.desc}
-                    </p>
-                  </div>
-                );
-              })}
             </div>
 
           </div>
@@ -311,6 +298,36 @@ const Hero = () => {
           </div>
 
         </div>
+
+        {/* Full-width Gradient Stats Banner */}
+        <div className="mt-12 w-full rounded-3xl overflow-hidden shadow-2xl animate-fade-up animation-delay-300">
+          <div
+            className="flex flex-col sm:flex-row items-stretch divide-y sm:divide-y-0 sm:divide-x divide-white/10"
+            style={{ background: "linear-gradient(135deg, #0d6b85 0%, #0b5272 45%, #093d62 100%)" }}
+          >
+            {statItems.map((stat, idx) => {
+              const StatIcon = stat.icon;
+              return (
+                <div key={idx} className="flex-1 flex items-center gap-5 px-7 sm:px-8 py-7 group">
+                  {/* Icon Box */}
+                  <div className="w-12 h-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0 shadow-inner group-hover:bg-white/15 transition-colors duration-300">
+                    <StatIcon className="w-6 h-6 text-white/90" />
+                  </div>
+                  {/* Value & Label */}
+                  <div className="min-w-0">
+                    <p className="text-2xl sm:text-3xl font-extrabold text-white leading-none tracking-tight truncate">
+                      {stat.value}
+                    </p>
+                    <p className="text-sm text-white/65 mt-1.5 font-medium">
+                      {stat.label}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
       </div>
     </section>
   );
