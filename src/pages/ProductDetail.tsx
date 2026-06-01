@@ -167,9 +167,32 @@ const products = [
   },
 ];
 
+import { getProducts } from "@/lib/productsStore";
+
 const ProductDetail = () => {
   const { id } = useParams();
-  const product = products.find((p) => p.id === id);
+  
+  const allProducts = getProducts();
+  const rawProduct = allProducts.find((p) => p.id === id);
+  const fallbackProduct = products.find((p) => p.id === id);
+
+  const product = rawProduct ? {
+    id: rawProduct.id,
+    name: rawProduct.name,
+    category: rawProduct.category,
+    image: rawProduct.image || fallbackProduct?.image,
+    featured: rawProduct.featured,
+    longDescription: fallbackProduct?.longDescription || rawProduct.description,
+    features: fallbackProduct?.features || [
+      "Akses penuh selamanya",
+      "Dukungan teknis berkelanjutan",
+      "Kompatibel dengan perangkat standar",
+      "File siap pakai & mudah dimodifikasi",
+      `Dibuat oleh ${rawProduct.author || "Mahasiswa STT NF"}`
+    ],
+    format: fallbackProduct?.format || rawProduct.subcategory || "Digital Asset",
+    compatibility: fallbackProduct?.compatibility || (rawProduct.jurusan ? `Jurusan ${rawProduct.jurusan}` : "Semua Perangkat Modern"),
+  } : fallbackProduct;
 
   if (!product) {
     return (
