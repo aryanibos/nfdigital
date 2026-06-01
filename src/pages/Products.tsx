@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Search, X, Filter, Grid3X3, List } from "lucide-react";
 import { Link } from "react-router-dom";
-import Navbar from "@/components/Navbar";
+import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import notionPlanner from "@/assets/notion-planner.jpg";
@@ -200,8 +200,7 @@ const Products = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <Layout>
       
       {/* Hero Section */}
       <section className="pt-28 pb-12 relative overflow-hidden">
@@ -421,7 +420,7 @@ const Products = () => {
       </section>
 
       <Footer />
-    </div>
+    </Layout>
   );
 };
 

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import Navbar from "@/components/Navbar";
+import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
 
 const Contact = () => {
@@ -45,10 +45,9 @@ const Contact = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <Layout>
 
-      <main className="pt-24 pb-20">
+      <main className="pt-8 pb-20">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
             {/* Left Side - Information */}
@@ -169,7 +168,7 @@ const Contact = () => {
       </main>
 
       <Footer />
-    </div>
+    </Layout>
   );
 };
 

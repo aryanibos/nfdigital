@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Tag, FileText, Layers, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import Navbar from "@/components/Navbar";
+import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
 import notionPlanner from "@/assets/notion-planner.jpg";
 import lightroomPresets from "@/assets/lightroom-presets.jpg";
@@ -173,8 +173,7 @@ const ProductDetail = () => {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
+      <Layout>
         <div className="container mx-auto px-4 pt-32 pb-20 text-center">
           <h1 className="text-3xl font-bold text-foreground mb-4">Produk Tidak Ditemukan</h1>
           <p className="text-muted-foreground mb-8">Maaf, produk yang kamu cari tidak tersedia.</p>
@@ -187,15 +186,14 @@ const ProductDetail = () => {
           </Link>
         </div>
         <Footer />
-      </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <Layout>
       
-      <main className="pt-24 pb-20">
+      <main className="pt-8 pb-20">
         <div className="container mx-auto px-4 lg:px-8">
           {/* Back Button */}
           <Link 
@@ -281,7 +279,7 @@ const ProductDetail = () => {
       </main>
 
       <Footer />
-    </div>
+    </Layout>
   );
 };
 

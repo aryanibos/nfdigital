@@ -1,104 +1,167 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
-import logo from "@/assets/nfdigital-logo.png";
+import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { GraduationCap, Menu, LogIn, LogOut, User, Lock } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import ProfileModal from "./ProfileModal";
 
-const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+interface NavbarProps {
+  onToggleSidebar: () => void;
+}
+
+const Navbar = ({ onToggleSidebar }: NavbarProps) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [session, setSession] = useState<any>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  const handleProfileUpdate = () => {
+    const sessionStr = localStorage.getItem("active_user_session");
+    if (sessionStr) {
+      try {
+        setSession(JSON.parse(sessionStr));
+      } catch (e) {}
+    }
+  };
+
+  // Load session state
+  useEffect(() => {
+    const sessionStr = localStorage.getItem("active_user_session");
+    if (sessionStr) {
+      try {
+        setSession(JSON.parse(sessionStr));
+      } catch (e) {
+        setSession(null);
+      }
+    } else {
+      setSession(null);
+    }
+  }, [location.pathname]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("active_user_session");
+    setSession(null);
+    toast({
+      title: "Keluar Sesi 🔓",
+      description: "Anda telah keluar dari portal.",
+    });
+    navigate("/");
+  };
 
   const navLinks = [
     { label: "Beranda", href: "/" },
     { label: "Produk", href: "/produk" },
-    { label: "Kontak", href: "/kontak" },
-  ];
-
-  const productLinks = [
-    { label: "Template Digital", href: "/produk?cat=Template" },
-    { label: "E-Book & Panduan", href: "/produk?cat=E-Book+%26+Panduan" },
-    { label: "Aset Desain", href: "/produk?cat=Aset+Desain" },
-    { label: "Video & Kursus", href: "/produk?cat=Video+%26+Kursus" },
-    { label: "Source Code", href: "/produk?cat=Source+Code" },
-    { label: "UI/UX Kit", href: "/produk?cat=UI%2FUX+Kit" },
-    { label: "Preset & Filter", href: "/produk?cat=Preset+%26+Filter" },
-    { label: "Font & Typography", href: "/produk?cat=Font+%26+Typography" },
-    { label: "Notion Template", href: "/produk?cat=Template" },
-    { label: "Figma Resources", href: "/produk?cat=UI%2FUX+Kit" },
-    { label: "Canva Template", href: "/produk?cat=Template" },
-    { label: "Social Media Pack", href: "/produk?cat=Template" },
+    { label: "Tentang", href: "/kontak" },
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass">
-      <div className="container mx-auto px-4 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-20">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
-            <img src={logo} alt="NFDigital" className="h-10 w-10 rounded-lg" />
-            <span className="text-xl lg:text-2xl font-extrabold text-foreground hidden sm:block">
-              NF<span className="text-primary">Digital</span>
-            </span>
-          </Link>
+    <header className="fixed top-0 left-0 right-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border h-16 lg:h-20 lg:pl-64 transition-all duration-300">
+      <div className="h-full px-4 lg:px-8 flex items-center justify-between">
+        
+        {/* Left Section: Toggle & Brand */}
+        <div className="flex items-center gap-3">
+          {/* Toggle Sidebar Button */}
+          <button
+            onClick={onToggleSidebar}
+            className="p-2 -ml-1 rounded-xl bg-secondary/80 hover:bg-secondary border border-border text-muted-foreground hover:text-foreground transition-all duration-200"
+            aria-label="Toggle Navigation"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
+          {/* Brand */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center lg:hidden">
+              <GraduationCap className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-sm sm:text-base font-extrabold text-foreground tracking-tight leading-none">
+                NF Katalog
+              </h1>
+              <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium block">
+                Bisnis Digital
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Section: Navigation Links & Portal Button */}
+        <nav className="flex items-center gap-2 sm:gap-4">
+          {navLinks.map((link) => {
+            const isActive = 
+              link.href === "/" 
+                ? location.pathname === "/"
+                : location.pathname.startsWith(link.href);
+
+            return (
               <Link
                 key={link.label}
                 to={link.href}
-                className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium"
+                className={cn(
+                  "px-2 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 hidden md:block",
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-[1.02]"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                )}
               >
                 {link.label}
               </Link>
-            ))}
-          </div>
+            );
+          })}
 
-          {/* Product Links - Hidden on Desktop, shown only on mobile */}
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden p-2 text-foreground hover:text-primary transition-colors"
-          >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="lg:hidden py-4 border-t border-border animate-fade-in">
-            <div className="flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  to={link.href}
-                  className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium py-2"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
+          {/* Unified Dynamic Portal Access Button in Top Navbar */}
+          {!session ? (
+            <Link
+              to="/login"
+              className="px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/95 flex items-center gap-2 glow-primary-sm transition-all"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Masuk Portal</span>
+            </Link>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsProfileOpen(true)}
+                className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-secondary/80 hover:bg-secondary text-foreground flex items-center gap-2 border border-border transition-all hover:border-primary/50 group"
+                title="Klik untuk Edit Profil & Kata Sandi"
+              >
+                {session.avatar ? (
+                  <img 
+                    src={session.avatar} 
+                    alt="Profile" 
+                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full object-cover border border-primary/30"
+                  />
+                ) : session.role === "admin" ? (
+                  <Lock className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform" />
+                ) : (
+                  <User className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform" />
+                )}
+                <span className="max-w-[70px] sm:max-w-[120px] truncate font-semibold">
+                  {session.name || (session.role === "admin" ? "Admin" : session.username)}
+                </span>
+              </button>
               
-              {/* Product Links - Mobile */}
-              <div className="pt-4 border-t border-border">
-                <p className="text-xs text-muted-foreground mb-3">Produk Digital</p>
-                <div className="flex flex-wrap gap-2">
-                  {productLinks.map((link) => (
-                    <Link
-                      key={link.label}
-                      to={link.href}
-                      className="px-3 py-2 rounded-lg text-xs font-medium bg-card border border-border text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-200"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
+              <button
+                onClick={handleLogout}
+                className="p-2 rounded-xl bg-secondary/40 hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 border border-border transition-colors"
+                title="Keluar Sesi"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
-          </div>
-        )}
+          )}
+        </nav>
+        
       </div>
-    </nav>
+
+      {/* Centralized Profile Modal */}
+      <ProfileModal 
+        isOpen={isProfileOpen} 
+        onClose={() => setIsProfileOpen(false)} 
+        onProfileUpdated={handleProfileUpdate}
+      />
+    </header>
   );
 };
 
