@@ -24,9 +24,21 @@ const ProductGrid = () => {
   
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // Load products on mount
+  // Load products on mount and set up category filter listener
   useEffect(() => {
     setProducts(getProducts());
+
+    const handleFilterCategory = (e: Event) => {
+      const customEvt = e as CustomEvent<string>;
+      if (customEvt.detail) {
+        setActiveCategory(customEvt.detail);
+      }
+    };
+
+    window.addEventListener("filter-category", handleFilterCategory);
+    return () => {
+      window.removeEventListener("filter-category", handleFilterCategory);
+    };
   }, []);
 
   // Close suggestions when clicking outside
