@@ -140,9 +140,9 @@ const Hero = () => {
 
             {/* Main Headline */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-[1.15] mb-6 tracking-tight text-slate-900">
-              Koleksi produk digital pilihan untuk mendukung{" "}
+              koleksi katalog produk pilihan untuk mendukung{" "}
               <span className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 bg-clip-text text-transparent block">
-                kreativitas dan produktivitasmu.
+                kreativitas dan produktivitas mahasiswa.
               </span>
             </h1>
 
