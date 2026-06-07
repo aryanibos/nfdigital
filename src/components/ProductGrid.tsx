@@ -115,7 +115,7 @@ const ProductGrid = () => {
       <div className="container mx-auto px-4 lg:px-8 relative z-10">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <span className="text-primary text-sm font-semibold uppercase tracking-wider bg-primary/10 px-3.5 py-1.5 rounded-full border border-primary/20">Koleksi Produk</span>
+          <span className="text-primary text-sm font-semibold uppercase tracking-wider bg-primary/10 px-3.5 py-1.5 rounded-full border border-primary/20">Katalog Produk</span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mt-5 mb-4">
             Produk <span className="text-gradient">Digital</span>
           </h2>
