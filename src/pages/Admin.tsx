@@ -239,9 +239,7 @@ const Admin = () => {
     refreshAllData();
   }, []);
 
-  // Update submission status (student submissions) with funding parameter
-  const handleUpdateStatus = (id: string, newStatus: "Disetujui" | "Ditolak", fundingAmt?: number) => {
-    // Retrieve latest from localStorage to avoid race conditions
+  const handleUpdateStatus = (id: string, newStatus: "Disetujui" | "Ditolak", fundingAmt?: number | null) => {
     const savedSubs = localStorage.getItem("student_submissions");
     const currentSubs: Submission[] = savedSubs ? JSON.parse(savedSubs) : submissions;
 
@@ -249,20 +247,19 @@ const Admin = () => {
       sub.id === id ? { 
         ...sub, 
         status: newStatus, 
-        fundingAmount: newStatus === "Disetujui" ? (fundingAmt || 0) : null 
+        fundingAmount: newStatus === "Disetujui" ? (fundingAmt !== undefined ? fundingAmt : null) : null 
       } : sub
     );
 
     setSubmissions(updated);
     localStorage.setItem("student_submissions", JSON.stringify(updated));
 
-    // Clone into catalog database if approved
     const targetSub = currentSubs.find(s => s.id === id);
     if (targetSub && newStatus === "Disetujui") {
       const newCatProduct: Product = {
         id: targetSub.id,
         name: targetSub.name,
-        category: "Template", // default category for approved items
+        category: "Template",
         subcategory: targetSub.jurusan || "Bisnis Digital",
         description: targetSub.description,
         image: targetSub.image || "",
@@ -270,41 +267,37 @@ const Admin = () => {
         nim: targetSub.nim,
         jurusan: targetSub.jurusan,
         featured: false,
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        price: fundingAmt !== undefined ? fundingAmt : null
       };
       saveProduct(newCatProduct);
     } else if (newStatus === "Ditolak") {
-      // Remove from catalog if previously approved
       deleteProduct(id);
     }
     
-    // Refresh all state variables and calculate stats
     refreshAllData();
     
     toast({
-      title: `Status Diperbarui ✨`,
-      description: `Produk berhasil di-${newStatus.toLowerCase()}.`,
+      title: newStatus === "Disetujui" ? "Pengajuan Disetujui! 🎓" : "Pengajuan Ditolak ❌",
+      description: `Status pengajuan "${targetSub?.name}" telah diperbarui.`,
     });
   };
 
-  // Helper trigger function for approval clicks
   const handleApproveClick = (id: string) => {
     setFundingTargetId(id);
     setFundingAmount("");
     setIsFundingDialogOpen(true);
   };
 
-  // Callback to confirm approval
   const handleConfirmApprove = (e: React.FormEvent) => {
     e.preventDefault();
     if (!fundingTargetId) return;
-    const amt = Number(fundingAmount) || 0;
+    const amt = fundingAmount.trim() !== "" ? Number(fundingAmount) : null;
     handleUpdateStatus(fundingTargetId, "Disetujui", amt);
     setIsFundingDialogOpen(false);
     setFundingTargetId(null);
   };
 
-  // Add / Edit manual product dialog trigger
   const handleOpenAdd = () => {
     setEditingProduct(null);
     setFormProduct({
@@ -354,7 +347,6 @@ const Admin = () => {
     reader.readAsDataURL(file);
   };
 
-  // Handle Save Product (Create or Update)
   const handleSaveProduct = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formProduct.name.trim() || !formProduct.author.trim()) return;
@@ -382,7 +374,6 @@ const Admin = () => {
     });
   };
 
-  // Delete product from catalog
   const handleDeleteProduct = (id: string) => {
     const confirmDelete = window.confirm("Apakah Anda yakin ingin menghapus produk ini dari katalog?");
     if (!confirmDelete) return;
@@ -824,31 +815,7 @@ const Admin = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label className="text-xs font-bold text-foreground">Kategori</Label>
-                <select
-                  value={formProduct.category}
-                  onChange={(e) => setFormProduct({ ...formProduct, category: e.target.value })}
-                  className="w-full bg-secondary/20 border border-border rounded-xl px-2.5 h-10 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary font-medium cursor-pointer"
-                >
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat} className="bg-card">{cat}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="space-y-1">
-                <Label className="text-xs font-bold text-foreground">Sub-Kategori / Format</Label>
-                <Input
-                  type="text"
-                  placeholder="Contoh: Notion, Figma, PDF"
-                  value={formProduct.subcategory}
-                  onChange={(e) => setFormProduct({ ...formProduct, subcategory: e.target.value })}
-                  className="rounded-xl bg-secondary/20 border-border focus:border-primary h-10 text-xs"
-                />
-              </div>
-            </div>
+
 
             <div className="space-y-1">
               <Label className="text-xs font-bold text-foreground">Harga Produk (Rupiah, Opsional)</Label>
@@ -1020,18 +987,17 @@ const Admin = () => {
           
           <form onSubmit={handleConfirmApprove} className="space-y-4 py-2">
             <div className="space-y-1">
-              <Label htmlFor="funding-amount" className="text-xs font-bold text-foreground">Nominal Pendanaan (Rupiah)</Label>
+              <Label htmlFor="funding-amount" className="text-xs font-bold text-foreground">Nominal Pendanaan (Rupiah, Opsional)</Label>
               <Input
                 id="funding-amount"
                 type="number"
-                placeholder="Contoh: 15000000"
+                placeholder="Contoh: 15000000 (Bisa dikosongkan)"
                 value={fundingAmount}
                 onChange={(e) => setFundingAmount(e.target.value)}
-                required
                 className="rounded-xl bg-secondary/20 border-border focus:border-primary h-11 text-sm"
               />
               <p className="text-[10px] text-muted-foreground mt-0.5">
-                Nilai ini akan dijumlahkan otomatis ke total pendanaan beranda.
+                Nilai ini opsional, kosongkan/lewati jika belum ditentukan harganya.
               </p>
             </div>
 
