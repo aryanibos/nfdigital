@@ -625,7 +625,7 @@ const Admin = () => {
                         <div className="min-w-0">
                           <h3 className="font-extrabold text-foreground text-sm leading-tight truncate">{prod.name}</h3>
                           <p className="text-[11px] text-muted-foreground mt-1 truncate">
-                            Pembuat: <strong className="text-foreground">{prod.author}</strong> • Kategori: <span className="text-primary font-bold">{prod.category}</span> • Sub: {prod.subcategory}
+                            Pembuat: <strong className="text-foreground">{prod.author}</strong>
                           </p>
                           {prod.featured && (
                             <span className="inline-block bg-amber-500/10 text-amber-500 text-[9px] font-bold px-1.5 py-0.2 rounded-md mt-1">

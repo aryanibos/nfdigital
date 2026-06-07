@@ -212,10 +212,7 @@ const Hero = () => {
                           alt={prod.title} 
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
-                        {/* Overlay Tag Category */}
-                        <span className={`absolute left-2.5 bottom-2.5 text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded border ${prod.tagColor}`}>
-                          {prod.category}
-                        </span>
+
                       </div>
 
                       {/* Content info */}

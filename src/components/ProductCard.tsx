@@ -28,10 +28,7 @@ const ProductCard = ({ id, name, category, description, image, featured = false,
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
         
-        {/* Category Badge */}
-        <Badge className="absolute top-4 left-4 bg-primary/20 text-primary border-0 backdrop-blur-sm">
-          {category}
-        </Badge>
+
 
         {/* Hover Overlay */}
         <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
