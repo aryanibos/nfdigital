@@ -140,7 +140,7 @@ const Hero = () => {
 
             {/* Main Headline */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-[1.15] mb-6 tracking-tight text-slate-900">
-              koleksi katalog produk pilihan untuk mendukung{" "}
+              Katalog produk pilihan untuk mendukung{" "}
               <span className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 bg-clip-text text-transparent block">
                 kreativitas dan produktivitas mahasiswa.
               </span>
@@ -148,7 +148,7 @@ const Hero = () => {
 
             {/* Description */}
             <p className="text-sm sm:text-base text-slate-500 leading-relaxed mb-8 max-w-xl">
-              Temukan berbagai template, e-book, dan tools digital yang dibuat oleh talenta berbakat untuk membantu kamu belajar, bekerja, dan berkarya lebih efektif.
+              Temukan berbagai produk-produk yang dibuat oleh mahasiswa talenta berbakat untuk membantu kamu melihat hasil karya mereka.
             </p>
 
             {/* CTA Actions */}
