@@ -17,6 +17,7 @@ interface Submission {
   image: string;
   nim: string;
   jurusan: string;
+  fundingAmount?: number | null;
 }
 
 const DEFAULT_SUBMISSIONS: Submission[] = [
@@ -26,8 +27,29 @@ const DEFAULT_SUBMISSIONS: Submission[] = [
     description: "nanjaabddbbdbdibi",
     status: "Disetujui",
     image: "",
-    nim: "0000000000",
-    jurusan: "Bisnis Digital"
+    nim: "0110221001",
+    jurusan: "Bisnis Digital",
+    fundingAmount: 600000000
+  },
+  {
+    id: "kebab-mahasiswa",
+    name: "Kebab Mahasiswa",
+    description: "Kebab lezat buatan mahasiswa untuk kantin kampus.",
+    status: "Disetujui",
+    image: "",
+    nim: "0110221002",
+    jurusan: "Bisnis Digital",
+    fundingAmount: 300000000
+  },
+  {
+    id: "jasa-desain",
+    name: "Jasa Desain Poster",
+    description: "Layanan desain grafis profesional untuk tugas dan event.",
+    status: "Disetujui",
+    image: "",
+    nim: "0110221003",
+    jurusan: "Bisnis Digital",
+    fundingAmount: 100000000
   }
 ];
 
@@ -193,7 +215,8 @@ const Submit = () => {
           status: "Menunggu",
           image: base64Image,
           nim: currentNim,
-          jurusan: "Bisnis Digital"
+          jurusan: "Bisnis Digital",
+          fundingAmount: null
         };
 
         const updatedAll = [newSub, ...allSubs];

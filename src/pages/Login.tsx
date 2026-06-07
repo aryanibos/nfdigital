@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { LogIn, GraduationCap, Lock, KeyRound } from "lucide-react";
+import { LogIn, GraduationCap, Lock, KeyRound, User } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,22 +14,52 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  // Determine current portal role view
+  const searchParams = new URLSearchParams(window.location.search);
+  const role = searchParams.get("role") || "mahasiswa";
+  const isStudent = role === "mahasiswa";
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!username.trim() || !password.trim()) {
       toast({
         title: "Gagal Masuk ❌",
-        description: "Username/NIM dan password harus diisi.",
+        description: isStudent ? "NIM dan kata sandi harus diisi." : "Username dan kata sandi harus diisi.",
         variant: "destructive",
       });
       return;
     }
 
+    const normUsername = username.toLowerCase().trim();
+    const isNewAdmin = normUsername === "admin";
+
+    // 10-digit NIM validation for student portal path
+    if (isStudent) {
+      const nimRegex = /^[0-9]{10}$/;
+      if (!nimRegex.test(username.trim())) {
+        toast({
+          title: "NIM Salah ❌",
+          description: "NIM salah, masukkan NIM benar",
+          variant: "destructive",
+        });
+        return;
+      }
+    } else {
+      // Admin path constraint
+      if (normUsername !== "admin") {
+        toast({
+          title: "Gagal Masuk ❌",
+          description: "Portal ini khusus untuk login Administrator.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     // Auth logic
     const accountsStr = localStorage.getItem("user_accounts");
     const accounts = accountsStr ? JSON.parse(accountsStr) : {};
-    const normUsername = username.toLowerCase().trim();
     
     // Check if user already has an account
     const existingAccount = accounts[normUsername] || accounts[username];
@@ -44,29 +74,27 @@ const Login = () => {
         return;
       }
       
-      // Match found, login with updated saved data
       const session = {
-        role: normUsername === "admin" ? "admin" : "mahasiswa",
-        username: normUsername === "admin" ? "admin" : username,
-        name: existingAccount.name || (normUsername === "admin" ? "Administrator Utama" : username),
-        nim: normUsername === "admin" ? "ADMIN" : (existingAccount.nim || username),
+        role: isNewAdmin ? "admin" : "mahasiswa",
+        username: isNewAdmin ? "admin" : username,
+        name: existingAccount.name || (isNewAdmin ? "Administrator Utama" : username),
+        nim: isNewAdmin ? "ADMIN" : (existingAccount.nim || username),
         avatar: existingAccount.avatar || ""
       };
       localStorage.setItem("active_user_session", JSON.stringify(session));
       
       toast({
-        title: normUsername === "admin" ? "Login Admin Berhasil! 🔐" : "Login Mahasiswa Berhasil! 🎓",
-        description: normUsername === "admin" 
+        title: isNewAdmin ? "Login Admin Berhasil! 🔐" : "Login Mahasiswa Berhasil! 🎓",
+        description: isNewAdmin 
           ? "Selamat datang kembali di Panel Pengelola."
           : `Selamat datang kembali, ${session.name}!`,
       });
       
-      navigate(normUsername === "admin" ? "/admin" : "/submit");
+      navigate(isNewAdmin ? "/admin" : "/submit");
       return;
     }
 
-    // Default account registration on first login
-    const isNewAdmin = normUsername === "admin";
+    // Default registration on first login
     if (isNewAdmin && password !== "admin") {
       toast({
         title: "Gagal Masuk ❌",
@@ -76,23 +104,21 @@ const Login = () => {
       return;
     }
     
-    // Create new account record
     const newSession = {
       role: isNewAdmin ? "admin" : "mahasiswa",
       username: isNewAdmin ? "admin" : username,
-      name: isNewAdmin ? "Administrator Utama" : (isNaN(Number(username)) ? username : "Mahasiswa Demo"),
-      nim: isNewAdmin ? "ADMIN" : (isNaN(Number(username)) ? "0110221045" : username),
+      name: isNewAdmin ? "Administrator Utama" : `Mahasiswa ${username}`,
+      nim: isNewAdmin ? "ADMIN" : username,
       avatar: ""
     };
     
-    // Save to user_accounts database
     accounts[newSession.username] = {
       name: newSession.name,
       nim: newSession.nim,
       email: isNewAdmin ? "admin@nfdigital.ac.id" : `${newSession.username}@student.nurulfikri.ac.id`,
       bio: isNewAdmin ? "Administrator Utama Portal NF Katalog" : "Mahasiswa Bisnis Digital STT NF",
       avatar: "",
-      password: password // set their password to whatever they typed on their first login!
+      password: password
     };
     localStorage.setItem("user_accounts", JSON.stringify(accounts));
     localStorage.setItem("active_user_session", JSON.stringify(newSession));
@@ -101,7 +127,7 @@ const Login = () => {
       title: isNewAdmin ? "Login Admin Berhasil! 🔐" : "Pendaftaran & Login Berhasil! 🎓",
       description: isNewAdmin 
         ? "Selamat datang kembali di Panel Pengelola."
-        : `Selamat datang, ${newSession.name}! Sandi Anda telah didaftarkan.`,
+        : `Selamat datang, Mahasiswa ${newSession.username}! Sandi Anda telah didaftarkan.`,
     });
     
     navigate(isNewAdmin ? "/admin" : "/submit");
@@ -116,30 +142,38 @@ const Login = () => {
           
           <div className="text-center mb-8 relative z-10">
             <div className="w-14 h-14 rounded-2xl bg-primary/10 mx-auto flex items-center justify-center mb-3 glow-primary-sm">
-              <GraduationCap className="w-8 h-8 text-primary" />
+              {isStudent ? (
+                <GraduationCap className="w-8 h-8 text-primary" />
+              ) : (
+                <Lock className="w-8 h-8 text-primary" />
+              )}
             </div>
-            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Portal NF Katalog</h1>
+            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">
+              {isStudent ? "Portal Mahasiswa" : "Portal Administrator"}
+            </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Satu portal masuk untuk Mahasiswa & Admin
+              {isStudent 
+                ? "Silakan masuk menggunakan akun Portal Mahasiswa STT NF" 
+                : "Silakan masuk menggunakan akun pengelola Anda"}
             </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5 relative z-10">
             <div className="space-y-2">
               <Label htmlFor="username" className="text-sm font-semibold text-foreground">
-                NIM / Username
+                {isStudent ? "NIM (Nomor Induk Mahasiswa)" : "Username Admin"}
               </Label>
               <div className="relative">
                 <Input
                   id="username"
                   type="text"
-                  placeholder="Masukkan NIM Anda / 'admin'"
+                  placeholder={isStudent ? "Masukkan NIM Anda" : "Masukkan username admin"}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
                   className="rounded-xl bg-secondary/50 border-border focus:border-primary focus:ring-primary/20 h-12 pl-10"
                 />
-                <Lock className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <User className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
               </div>
             </div>
 
@@ -166,7 +200,7 @@ const Login = () => {
               className="w-full h-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-base glow-primary-sm hover:glow-primary transition-all flex items-center justify-center gap-2 mt-2"
             >
               <LogIn className="w-4 h-4" />
-              Masuk Portal
+              {isStudent ? "Masuk Mahasiswa" : "Masuk Administrator"}
             </Button>
           </form>
 
@@ -176,9 +210,9 @@ const Login = () => {
               💡 <strong>Tips Percobaan:</strong>
             </p>
             <p className="text-[10px] text-muted-foreground/80 mt-1">
-              • Masuk sebagai Admin: ketik <strong>admin</strong> / <strong>admin</strong>
-              <br />
-              • Masuk sebagai Mahasiswa: masukkan NIM bebas & password bebas
+              {isStudent 
+                ? "• Masukkan 10 digit NIM bebas & kata sandi bebas untuk didaftarkan otomatis." 
+                : "• Masuk sebagai Admin: ketik admin / admin"}
             </p>
           </div>
         </div>

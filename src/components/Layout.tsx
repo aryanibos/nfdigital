@@ -44,6 +44,18 @@ const Layout = ({ children }: LayoutProps) => {
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (loginRole === "mahasiswa") {
+      const nimRegex = /^[0-9]{10}$/;
+      if (!nimRegex.test(loginForm.username.trim())) {
+        toast({
+          title: "NIM Salah ❌",
+          description: "NIM salah, masukkan NIM benar",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
     // Show premium toast
     toast({
       title: loginRole === "admin" ? "Login Admin Berhasil! 🔐" : "Login Mahasiswa Berhasil! 🎓",

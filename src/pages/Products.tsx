@@ -222,41 +222,11 @@ const Products = () => {
             </div>
           </div>
 
-          {/* Results count & Quick category display */}
-          <div className="flex flex-col lg:flex-row gap-6 items-start justify-between mb-8">
-            <div className="flex items-center justify-between w-full lg:w-auto">
-              <p className="text-sm text-muted-foreground">
-                Menampilkan <span className="font-bold text-foreground">{filteredProducts.length}</span> produk
-              </p>
-              {activeCategory !== "Semua" && (
-                <button
-                  onClick={() => setActiveCategory("Semua")}
-                  className="text-sm text-primary hover:underline font-semibold ml-4 lg:hidden"
-                >
-                  Lihat Semua
-                </button>
-              )}
-            </div>
-
-            {/* Sub-navbar Category Filter */}
-            <div className="flex flex-wrap gap-1.5 w-full">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => {
-                    setActiveCategory(category);
-                    setSearchQuery("");
-                  }}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 ${
-                    activeCategory === category
-                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20 scale-[1.01]"
-                      : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
+          {/* Results count display */}
+          <div className="flex items-center justify-between mb-8">
+            <p className="text-sm text-muted-foreground">
+              Menampilkan <span className="font-bold text-foreground">{filteredProducts.length}</span> produk
+            </p>
           </div>
 
           {/* Product Grid/List */}

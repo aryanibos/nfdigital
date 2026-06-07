@@ -20,6 +20,7 @@ export interface Product {
   jurusan?: string;
   featured: boolean;
   createdAt: number;
+  price?: number | null;
 }
 
 const DEFAULT_PRODUCTS: Product[] = [

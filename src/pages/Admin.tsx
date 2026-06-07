@@ -43,6 +43,7 @@ interface Submission {
   image: string;
   nim: string;
   jurusan: string;
+  fundingAmount?: number | null;
 }
 
 const CATEGORIES = [
@@ -76,30 +77,44 @@ const Admin = () => {
     subcategory: "Notion",
     description: "",
     image: "",
-    featured: false
+    featured: false,
+    price: ""
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Stats State
+  // Stats State (Renamed key names based on new instructions)
   const [stats, setStats] = useState({
-    totalDana: "Rp 12.500.000",
-    jumlahDonatur: "15",
-    kampanyeAktif: "8"
+    totalPendanaan: "Rp 0",
+    jumlahUsaha: "0",
+    jumlahProduk: "0"
   });
-  const [editingStat, setEditingStat] = useState<"totalDana" | "jumlahDonatur" | "kampanyeAktif" | null>(null);
-  const [editingStatValue, setEditingStatValue] = useState("");
+
+  const [initialBudgetInput, setInitialBudgetInput] = useState("");
+
+  const [isEditTotalOpen, setIsEditTotalOpen] = useState(false);
+  const [newTotalInput, setNewTotalInput] = useState("");
+
+  // Funding Modal States
+  const [isFundingDialogOpen, setIsFundingDialogOpen] = useState(false);
+  const [fundingTargetId, setFundingTargetId] = useState<string | null>(null);
+  const [fundingAmount, setFundingAmount] = useState("");
 
   // Load dynamic data on mount
   const refreshAllData = () => {
     // Submissions
     const savedSubs = localStorage.getItem("student_submissions");
+    let currentSubs: Submission[] = [];
     if (savedSubs) {
-      setSubmissions(JSON.parse(savedSubs));
+      currentSubs = JSON.parse(savedSubs);
+      setSubmissions(currentSubs);
     } else {
       const defaultSubs = [
-        { id: "koat-coffe", name: "koat coffe", description: "nanjaabddbbdbdibi", status: "Disetujui" as const, image: "", nim: "0000000000", jurusan: "Bisnis Digital" }
+        { id: "koat-coffe", name: "koat coffe", description: "nanjaabddbbdbdibi", status: "Disetujui" as const, image: "", nim: "0110221001", jurusan: "Bisnis Digital", fundingAmount: 600000000 },
+        { id: "kebab-mahasiswa", name: "Kebab Mahasiswa", description: "Kebab lezat buatan mahasiswa.", status: "Disetujui" as const, image: "", nim: "0110221002", jurusan: "Bisnis Digital", fundingAmount: 300000000 },
+        { id: "jasa-desain", name: "Jasa Desain Poster", description: "Layanan desain grafis profesional.", status: "Disetujui" as const, image: "", nim: "0110221003", jurusan: "Bisnis Digital", fundingAmount: 100000000 }
       ];
+      currentSubs = defaultSubs;
       setSubmissions(defaultSubs);
       localStorage.setItem("student_submissions", JSON.stringify(defaultSubs));
     }
@@ -107,11 +122,90 @@ const Admin = () => {
     // Dynamic Catalog
     setCatalogProducts(getProducts());
 
-    // Stats
-    const savedStats = localStorage.getItem("homepage_stats");
-    if (savedStats) {
-      setStats(JSON.parse(savedStats));
+    // Calculate dynamic stats based on new requirements:
+    const savedInitialBudget = localStorage.getItem("admin_initial_budget");
+    const initialBudget = savedInitialBudget !== null ? Number(savedInitialBudget) : 100000000;
+    
+    // Sum of all product prices currently in the catalog (approved student submissions + admin-created products)
+    const catalogProds = getProducts();
+    const totalSpent = catalogProds.reduce((acc, p) => acc + (Number(p.price) || 0), 0);
+    const remainingFunding = initialBudget - totalSpent;
+
+    // Unique students whose products are active in the catalog
+    const uniqueNims = new Set(catalogProds.map(p => p.nim).filter(Boolean));
+    const totalUsaha = uniqueNims.size;
+
+    // Total number of products in catalog (admin-created + approved submissions)
+    const totalProducts = catalogProds.length;
+
+    const formatCurrency = (num: number) => {
+      return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(num).replace(/,00$/, "");
+    };
+
+    const calculatedStats = {
+      totalPendanaan: formatCurrency(remainingFunding),
+      jumlahUsaha: totalUsaha.toString(),
+      jumlahProduk: totalProducts.toString()
+    };
+    
+    setStats(calculatedStats);
+    localStorage.setItem("homepage_stats", JSON.stringify(calculatedStats));
+  };
+
+  const handleSaveInitialBudget = () => {
+    const val = Number(initialBudgetInput);
+    if (isNaN(val) || val <= 0) {
+      toast({
+        title: "Input Tidak Valid ❌",
+        description: "Masukkan nominal dana tambahan yang benar.",
+        variant: "destructive",
+      });
+      return;
     }
+    
+    const savedInitialBudget = localStorage.getItem("admin_initial_budget");
+    const currentBudget = savedInitialBudget !== null ? Number(savedInitialBudget) : 100000000;
+    const newBudget = currentBudget + val;
+    
+    localStorage.setItem("admin_initial_budget", newBudget.toString());
+    setInitialBudgetInput("");
+    
+    toast({
+      title: "Dana Berhasil Ditambahkan! 💰",
+      description: `Dana sebesar Rp ${val.toLocaleString("id-ID")} berhasil ditambahkan ke anggaran.`,
+    });
+    refreshAllData();
+  };
+
+  const handleSaveDirectTotal = () => {
+    const val = Number(newTotalInput);
+    if (isNaN(val) || val < 0) {
+      toast({
+        title: "Input Tidak Valid ❌",
+        description: "Masukkan nominal pendanaan yang benar.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const catalogProds = getProducts();
+    const totalSpent = catalogProds.reduce((acc, p) => acc + (Number(p.price) || 0), 0);
+    const newBudget = val + totalSpent;
+    
+    localStorage.setItem("admin_initial_budget", newBudget.toString());
+    setIsEditTotalOpen(false);
+    setNewTotalInput("");
+    
+    toast({
+      title: "Total Pendanaan Diperbarui! 💰",
+      description: `Total pendanaan berhasil disesuaikan menjadi Rp ${val.toLocaleString("id-ID")}`,
+    });
+    refreshAllData();
   };
 
   useEffect(() => {
@@ -145,16 +239,25 @@ const Admin = () => {
     refreshAllData();
   }, []);
 
-  // Update submission status (student submissions)
-  const handleUpdateStatus = (id: string, newStatus: "Disetujui" | "Ditolak") => {
-    const updated = submissions.map(sub => 
-      sub.id === id ? { ...sub, status: newStatus } : sub
+  // Update submission status (student submissions) with funding parameter
+  const handleUpdateStatus = (id: string, newStatus: "Disetujui" | "Ditolak", fundingAmt?: number) => {
+    // Retrieve latest from localStorage to avoid race conditions
+    const savedSubs = localStorage.getItem("student_submissions");
+    const currentSubs: Submission[] = savedSubs ? JSON.parse(savedSubs) : submissions;
+
+    const updated = currentSubs.map(sub => 
+      sub.id === id ? { 
+        ...sub, 
+        status: newStatus, 
+        fundingAmount: newStatus === "Disetujui" ? (fundingAmt || 0) : null 
+      } : sub
     );
+
     setSubmissions(updated);
     localStorage.setItem("student_submissions", JSON.stringify(updated));
 
     // Clone into catalog database if approved
-    const targetSub = submissions.find(s => s.id === id);
+    const targetSub = currentSubs.find(s => s.id === id);
     if (targetSub && newStatus === "Disetujui") {
       const newCatProduct: Product = {
         id: targetSub.id,
@@ -170,17 +273,35 @@ const Admin = () => {
         createdAt: Date.now()
       };
       saveProduct(newCatProduct);
-      refreshAllData();
     } else if (newStatus === "Ditolak") {
       // Remove from catalog if previously approved
       deleteProduct(id);
-      refreshAllData();
     }
+    
+    // Refresh all state variables and calculate stats
+    refreshAllData();
     
     toast({
       title: `Status Diperbarui ✨`,
       description: `Produk berhasil di-${newStatus.toLowerCase()}.`,
     });
+  };
+
+  // Helper trigger function for approval clicks
+  const handleApproveClick = (id: string) => {
+    setFundingTargetId(id);
+    setFundingAmount("");
+    setIsFundingDialogOpen(true);
+  };
+
+  // Callback to confirm approval
+  const handleConfirmApprove = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fundingTargetId) return;
+    const amt = Number(fundingAmount) || 0;
+    handleUpdateStatus(fundingTargetId, "Disetujui", amt);
+    setIsFundingDialogOpen(false);
+    setFundingTargetId(null);
   };
 
   // Add / Edit manual product dialog trigger
@@ -194,7 +315,8 @@ const Admin = () => {
       subcategory: "Notion",
       description: "",
       image: "",
-      featured: false
+      featured: false,
+      price: ""
     });
     setIsAddEditOpen(true);
   };
@@ -209,7 +331,8 @@ const Admin = () => {
       subcategory: product.subcategory,
       description: product.description,
       image: product.image || "",
-      featured: product.featured
+      featured: product.featured,
+      price: product.price ? product.price.toString() : ""
     });
     setIsAddEditOpen(true);
   };
@@ -245,7 +368,8 @@ const Admin = () => {
       description: formProduct.description || "Tidak ada deskripsi.",
       image: formProduct.image || "",
       featured: formProduct.featured,
-      createdAt: editingProduct ? editingProduct.createdAt : Date.now()
+      createdAt: editingProduct ? editingProduct.createdAt : Date.now(),
+      price: formProduct.price ? Number(formProduct.price) : null
     };
 
     saveProduct(finalProduct);
@@ -260,7 +384,22 @@ const Admin = () => {
 
   // Delete product from catalog
   const handleDeleteProduct = (id: string) => {
+    const confirmDelete = window.confirm("Apakah Anda yakin ingin menghapus produk ini dari katalog?");
+    if (!confirmDelete) return;
+
     deleteProduct(id);
+    
+    // Also update student submissions status if it is a student product
+    const savedSubs = localStorage.getItem("student_submissions");
+    if (savedSubs) {
+      const currentSubs: Submission[] = JSON.parse(savedSubs);
+      const updatedSubs = currentSubs.map(sub => 
+        sub.id === id ? { ...sub, status: "Ditolak" as const } : sub
+      );
+      localStorage.setItem("student_submissions", JSON.stringify(updatedSubs));
+      setSubmissions(updatedSubs);
+    }
+
     refreshAllData();
     toast({
       title: "Katalog Dihapus 🗑️",
@@ -268,21 +407,7 @@ const Admin = () => {
     });
   };
 
-  // Save stat edits
-  const handleSaveStat = () => {
-    if (!editingStat) return;
-    const updatedStats = {
-      ...stats,
-      [editingStat]: editingStatValue
-    };
-    setStats(updatedStats);
-    localStorage.setItem("homepage_stats", JSON.stringify(updatedStats));
-    setEditingStat(null);
-    toast({
-      title: "Statistik Diperbarui 📈",
-      description: "Statistik tampilan beranda berhasil diubah.",
-    });
-  };
+  // Stats are calculated dynamically on load and status updates
 
   // Filter helpers for student submissions
   const countByStatus = (status: "Menunggu" | "Disetujui" | "Ditolak") => {
@@ -454,7 +579,7 @@ const Admin = () => {
                               Tolak
                             </Button>
                             <Button
-                              onClick={() => handleUpdateStatus(sub.id, "Disetujui")}
+                              onClick={() => handleApproveClick(sub.id)}
                               size="sm"
                               className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/95 flex items-center gap-1 h-9 text-xs glow-primary-sm"
                             >
@@ -553,62 +678,79 @@ const Admin = () => {
           <div className="bg-card border border-border rounded-3xl p-6 shadow-xl space-y-6 animate-fade-in max-w-2xl">
             <h2 className="text-lg font-bold text-foreground border-b border-border pb-3 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
-              Kelola Pencapaian Beranda
+              Statistik Beranda (Terkalkulasi Otomatis)
             </h2>
+            <p className="text-xs text-muted-foreground">
+              Statistik berikut dihitung secara otomatis berdasarkan nominal anggaran awal yang diinput admin dikurangi total harga produk di katalog.
+            </p>
+
+            {/* Input Config Section */}
+            <div className="bg-secondary/20 border border-border rounded-2xl p-5 space-y-4">
+              <h3 className="text-sm font-bold text-foreground">Pengaturan Anggaran Pendanaan</h3>
+              <div className="space-y-2">
+                <Label htmlFor="initialBudget" className="text-xs font-semibold text-muted-foreground">
+                  Tambah Dana (Rupiah)
+                </Label>
+                <div className="flex gap-3">
+                  <Input
+                    id="initialBudget"
+                    type="number"
+                    value={initialBudgetInput}
+                    onChange={(e) => setInitialBudgetInput(e.target.value)}
+                    placeholder="Masukkan nominal dana tambahan. Contoh: 1000000"
+                    className="rounded-xl bg-background border-border h-11"
+                  />
+                  <Button
+                    onClick={handleSaveInitialBudget}
+                    className="rounded-xl h-11 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-5"
+                  >
+                    Simpan
+                  </Button>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  * Nominal ini akan otomatis ditambahkan ke total anggaran pendanaan.
+                </p>
+              </div>
+            </div>
 
             <div className="space-y-4">
               {/* Stat 1 */}
               <div className="flex items-center justify-between p-4 bg-secondary/20 border border-border rounded-2xl gap-4">
                 <div>
-                  <span className="text-xs font-bold text-muted-foreground uppercase">Statistik 1 (Judul: Produk Digital)</span>
-                  <p className="text-base font-extrabold text-foreground mt-1">{stats.totalDana}</p>
+                  <span className="text-xs font-bold text-muted-foreground uppercase">Total Pendanaan</span>
+                  <div className="flex items-center gap-3 mt-1">
+                    <p className="text-lg font-extrabold text-primary">{stats.totalPendanaan}</p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="w-8 h-8 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground"
+                      onClick={() => {
+                        const plainVal = stats.totalPendanaan.replace(/[^0-9]/g, "");
+                        setNewTotalInput(plainVal);
+                        setIsEditTotalOpen(true);
+                      }}
+                      title="Edit Sisa Total Pendanaan"
+                    >
+                      <Edit className="w-4.5 h-4.5" />
+                    </Button>
+                  </div>
                 </div>
-                <Button
-                  onClick={() => {
-                    setEditingStat("totalDana");
-                    setEditingStatValue(stats.totalDana);
-                  }}
-                  variant="outline"
-                  className="rounded-xl border-border"
-                >
-                  Edit Angka
-                </Button>
               </div>
 
               {/* Stat 2 */}
               <div className="flex items-center justify-between p-4 bg-secondary/20 border border-border rounded-2xl gap-4">
                 <div>
-                  <span className="text-xs font-bold text-muted-foreground uppercase">Statistik 2 (Judul: Mahasiswa Aktif)</span>
-                  <p className="text-base font-extrabold text-foreground mt-1">{stats.jumlahDonatur}</p>
+                  <span className="text-xs font-bold text-muted-foreground uppercase">Jumlah Usaha Mahasiswa</span>
+                  <p className="text-lg font-extrabold text-foreground mt-1">{stats.jumlahUsaha}</p>
                 </div>
-                <Button
-                  onClick={() => {
-                    setEditingStat("jumlahDonatur");
-                    setEditingStatValue(stats.jumlahDonatur);
-                  }}
-                  variant="outline"
-                  className="rounded-xl border-border"
-                >
-                  Edit Angka
-                </Button>
               </div>
 
               {/* Stat 3 */}
               <div className="flex items-center justify-between p-4 bg-secondary/20 border border-border rounded-2xl gap-4">
                 <div>
-                  <span className="text-xs font-bold text-muted-foreground uppercase">Statistik 3 (Judul: Kategori Terdaftar)</span>
-                  <p className="text-base font-extrabold text-foreground mt-1">{stats.kampanyeAktif}</p>
+                  <span className="text-xs font-bold text-muted-foreground uppercase">Jumlah Produk</span>
+                  <p className="text-lg font-extrabold text-foreground mt-1">{stats.jumlahProduk}</p>
                 </div>
-                <Button
-                  onClick={() => {
-                    setEditingStat("kampanyeAktif");
-                    setEditingStatValue(stats.kampanyeAktif);
-                  }}
-                  variant="outline"
-                  className="rounded-xl border-border"
-                >
-                  Edit Angka
-                </Button>
               </div>
             </div>
           </div>
@@ -709,6 +851,17 @@ const Admin = () => {
             </div>
 
             <div className="space-y-1">
+              <Label className="text-xs font-bold text-foreground">Harga Produk (Rupiah, Opsional)</Label>
+              <Input
+                type="number"
+                placeholder="Biarkan kosong jika belum memiliki harga"
+                value={formProduct.price}
+                onChange={(e) => setFormProduct({ ...formProduct, price: e.target.value })}
+                className="rounded-xl bg-secondary/20 border-border focus:border-primary h-10 text-xs"
+              />
+            </div>
+
+            <div className="space-y-1">
               <Label className="text-xs font-bold text-foreground">Deskripsi Singkat</Label>
               <Textarea
                 placeholder="Jelaskan mengenai produk..."
@@ -748,50 +901,6 @@ const Admin = () => {
               </Button>
             </DialogFooter>
           </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog: Edit Stat Value */}
-      <Dialog open={editingStat !== null} onOpenChange={(open) => !open && setEditingStat(null)}>
-        <DialogContent className="sm:max-w-[400px] bg-card border-border rounded-3xl p-5 shadow-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              Edit Statistik Pencapaian
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Ubah nilai statistik pencapaian yang akan ditampilkan secara publik di halaman beranda.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-foreground">Nilai Pencapaian Baru</Label>
-              <Input
-                type="text"
-                value={editingStatValue}
-                onChange={(e) => setEditingStatValue(e.target.value)}
-                placeholder="Masukkan nilai (contoh: 15, Rp 10.000.000, 8)"
-                className="rounded-xl bg-secondary/20 border-border focus:border-primary h-11 text-xs"
-              />
-            </div>
-
-            <DialogFooter className="pt-2 gap-2 flex">
-              <Button
-                onClick={() => setEditingStat(null)}
-                variant="outline"
-                className="flex-grow rounded-xl border-border text-xs h-10 font-bold"
-              >
-                Batal
-              </Button>
-              <Button
-                onClick={handleSaveStat}
-                className="flex-grow rounded-xl bg-primary hover:bg-primary/95 text-xs h-10 font-bold glow-primary-sm"
-              >
-                Simpan
-              </Button>
-            </DialogFooter>
-          </div>
         </DialogContent>
       </Dialog>
 
@@ -880,7 +989,7 @@ const Admin = () => {
                     </Button>
                     <Button
                       onClick={() => {
-                        handleUpdateStatus(selectedSubmission.id, "Disetujui");
+                        handleApproveClick(selectedSubmission.id);
                         setSelectedSubmission(null);
                       }}
                       className="rounded-xl h-10 px-4 bg-primary text-primary-foreground hover:bg-primary/95 flex items-center gap-1.5 text-xs font-bold glow-primary-sm"
@@ -893,6 +1002,105 @@ const Admin = () => {
               </DialogFooter>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+ 
+      {/* Dialog: Enter Funding Amount on Approval */}
+      <Dialog open={isFundingDialogOpen} onOpenChange={(open) => !open && setIsFundingDialogOpen(false)}>
+        <DialogContent className="sm:max-w-[400px] bg-card border-border rounded-3xl p-6 shadow-2xl">
+          <DialogHeader className="text-center items-center">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
+              <TrendingUp className="w-6 h-6 text-primary" />
+            </div>
+            <DialogTitle className="text-base font-extrabold text-foreground">Setujui & Nominal Pendanaan</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Masukkan total nominal pendanaan untuk produk inovatif mahasiswa ini.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleConfirmApprove} className="space-y-4 py-2">
+            <div className="space-y-1">
+              <Label htmlFor="funding-amount" className="text-xs font-bold text-foreground">Nominal Pendanaan (Rupiah)</Label>
+              <Input
+                id="funding-amount"
+                type="number"
+                placeholder="Contoh: 15000000"
+                value={fundingAmount}
+                onChange={(e) => setFundingAmount(e.target.value)}
+                required
+                className="rounded-xl bg-secondary/20 border-border focus:border-primary h-11 text-sm"
+              />
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Nilai ini akan dijumlahkan otomatis ke total pendanaan beranda.
+              </p>
+            </div>
+
+            <DialogFooter className="pt-2 flex sm:justify-between gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsFundingDialogOpen(false)}
+                className="rounded-xl h-10 px-4 text-xs font-bold border-border"
+              >
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                className="rounded-xl h-10 px-4 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/95 glow-primary-sm"
+              >
+                Konfirmasi Setujui
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+ 
+      {/* Dialog: Edit Total Pendanaan */}
+      <Dialog open={isEditTotalOpen} onOpenChange={(open) => !open && setIsEditTotalOpen(false)}>
+        <DialogContent className="sm:max-w-[400px] bg-card border-border rounded-3xl p-5 shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-extrabold text-foreground flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-primary" />
+              Koreksi Sisa Total Pendanaan
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Masukkan nominal sisa Total Pendanaan baru untuk memperbaiki kesalahan input.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-3">
+            <div className="space-y-2">
+              <Label htmlFor="newTotalInput" className="text-xs font-semibold text-foreground">
+                Sisa Pendanaan Baru (Rupiah)
+              </Label>
+              <Input
+                id="newTotalInput"
+                type="number"
+                value={newTotalInput}
+                onChange={(e) => setNewTotalInput(e.target.value)}
+                placeholder="Contoh: 985000"
+                className="rounded-xl bg-secondary/50 border-border h-11"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditTotalOpen(false)}
+                className="rounded-xl h-11 px-5 border-border"
+              >
+                Batal
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSaveDirectTotal}
+                className="rounded-xl h-11 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-5"
+              >
+                Simpan
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

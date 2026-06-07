@@ -8,13 +8,14 @@ interface ProductCardProps {
   description: string;
   image: string;
   featured?: boolean;
+  price?: number | null;
 }
 
-const ProductCard = ({ id, name, category, description, image, featured = false }: ProductCardProps) => {
+const ProductCard = ({ id, name, category, description, image, featured = false, price }: ProductCardProps) => {
   return (
     <Link 
       to={`/produk/${id}`}
-      className={`group relative bg-card rounded-2xl overflow-hidden border border-border card-hover block cursor-pointer ${
+      className={`group relative bg-card rounded-2xl overflow-hidden border border-border card-hover flex flex-col cursor-pointer ${
         featured ? "row-span-2" : ""
       }`}
     >
@@ -41,13 +42,24 @@ const ProductCard = ({ id, name, category, description, image, featured = false 
       </div>
 
       {/* Content */}
-      <div className="p-5">
-        <h3 className="text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
-          {name}
-        </h3>
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {description}
-        </p>
+      <div className="p-5 flex flex-col justify-between flex-grow">
+        <div>
+          <h3 className="text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
+            {name}
+          </h3>
+          <p className="text-sm text-muted-foreground line-clamp-2">
+            {description}
+          </p>
+        </div>
+        {price && Number(price) > 0 ? (
+          <div className="text-sm font-extrabold text-blue-600 mt-4">
+            Rp {Number(price).toLocaleString("id-ID")}
+          </div>
+        ) : (
+          <div className="text-sm font-extrabold text-blue-600 mt-4 h-5">
+            &nbsp;
+          </div>
+        )}
       </div>
     </Link>
   );

@@ -173,25 +173,7 @@ const ProductGrid = () => {
           )}
         </div>
 
-        {/* Category Filter */}
-        <div className="flex flex-wrap justify-center gap-2.5 mb-12">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => {
-                setActiveCategory(category);
-                setSearchQuery("");
-              }}
-              className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 ${
-                activeCategory === category
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-[1.02]"
-                  : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
-              }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
+
 
         {/* Product Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

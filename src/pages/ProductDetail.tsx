@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Tag, FileText, Layers, Star } from "lucide-react";
+import { ArrowLeft, Tag, FileText, Layers, Star, Calendar, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
@@ -252,48 +252,72 @@ const ProductDetail = () => {
             <div className="space-y-8">
               {/* Header */}
               <div>
-                <Badge className="mb-4 bg-primary/20 text-primary border-0">
-                  {product.category}
-                </Badge>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Badge className="bg-primary/10 text-primary border-0 hover:bg-primary/20 text-xs font-semibold px-3 py-1 rounded-full">
+                    {product.category}
+                  </Badge>
+                  {rawProduct?.jurusan && (
+                    <Badge className="bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80 text-xs font-semibold px-3 py-1 rounded-full">
+                      {rawProduct.jurusan}
+                    </Badge>
+                  )}
+                  {product.format && (
+                    <Badge className="bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80 text-xs font-semibold px-3 py-1 rounded-full">
+                      {product.format}
+                    </Badge>
+                  )}
+                </div>
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
                   {product.name}
                 </h1>
-                <p className="text-lg text-muted-foreground leading-relaxed">
+                <p className="text-lg text-muted-foreground leading-relaxed mb-4">
                   {product.longDescription}
                 </p>
+                
+                {rawProduct?.price && Number(rawProduct.price) > 0 && (
+                  <div className="text-2xl font-extrabold text-blue-600 mb-6">
+                    Rp {Number(rawProduct.price).toLocaleString("id-ID")}
+                  </div>
+                )}
               </div>
 
-              {/* Features */}
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                  <Layers className="w-5 h-5 text-primary" />
-                  Fitur Utama
-                </h2>
-                <ul className="space-y-3">
-                  {product.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <span className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
-                      <span className="text-muted-foreground">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Specs */}
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="bg-card rounded-xl border border-border p-5">
-                  <div className="flex items-center gap-3 mb-2">
-                    <FileText className="w-5 h-5 text-primary" />
-                    <span className="text-sm text-muted-foreground">Format</span>
-                  </div>
-                  <p className="font-semibold text-foreground">{product.format}</p>
-                </div>
-                <div className="bg-card rounded-xl border border-border p-5">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Tag className="w-5 h-5 text-primary" />
-                    <span className="text-sm text-muted-foreground">Kompatibilitas</span>
-                  </div>
-                  <p className="font-semibold text-foreground">{product.compatibility}</p>
+              {/* Informasi Pembuat */}
+              <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider text-muted-foreground/80">
+                  Informasi Pembuat
+                </h3>
+                {(() => {
+                  const authorLower = rawProduct?.author?.toLowerCase() || "";
+                  const isAdmin = authorLower === "admin" || authorLower === "administrator utama" || rawProduct?.nim === "ADMIN";
+                  
+                  const creatorName = isAdmin ? "Administrator" : (rawProduct?.author || "Budi Santoso");
+                  const creatorRole = isAdmin ? "Pengelola Portal" : `Mahasiswa ${rawProduct?.jurusan || "Bisnis Digital"}`;
+                  
+                  return (
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <User className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-foreground text-base">
+                          {creatorName}
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          {creatorRole}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
+                <div className="border-t border-border pt-3.5 flex items-center gap-2 text-xs text-muted-foreground font-medium">
+                  <Calendar className="w-4 h-4 text-muted-foreground/80" />
+                  <span>
+                    Ditambahkan {new Date(rawProduct?.createdAt || Date.now()).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric"
+                    })}
+                  </span>
                 </div>
               </div>
             </div>

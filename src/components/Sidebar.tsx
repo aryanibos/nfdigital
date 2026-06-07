@@ -67,7 +67,6 @@ const Sidebar = ({ isOpen, onClose, isDesktopOpen = true }: SidebarProps) => {
   const menuItems = [
     { label: "Beranda", href: "/", icon: Home },
     { label: "Produk", href: "/produk", icon: Package },
-    { label: "Bisnis Proses", href: "/bisnis-proses", icon: Workflow },
     { label: "Tentang", href: "/kontak", icon: Info },
   ];
 
@@ -138,23 +137,30 @@ const Sidebar = ({ isOpen, onClose, isDesktopOpen = true }: SidebarProps) => {
 
         {/* Dynamic Portal Section based on Login Role */}
         {!session ? (
-          /* NOT LOGGED IN: Show single Unified Login Button */
+          /* NOT LOGGED IN: Show separate portal access buttons */
           <div className="space-y-2">
             <p className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase px-3">
               Akses Portal
             </p>
             <Link
-              to="/login"
+              to="/login?role=mahasiswa"
               onClick={() => onClose()}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group",
-                location.pathname === "/login"
-                  ? "bg-primary/10 text-primary font-semibold"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-muted-foreground hover:text-foreground hover:bg-secondary"
               )}
             >
-              <LogIn className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform duration-200 group-hover:scale-110" />
-              Masuk Portal
+              <GraduationCap className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform duration-200 group-hover:scale-110" />
+              Portal Mahasiswa
+            </Link>
+            <Link
+              to="/login?role=admin"
+              onClick={() => onClose()}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-muted-foreground hover:text-foreground hover:bg-secondary"
+              )}
+            >
+              <Lock className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform duration-200 group-hover:scale-110" />
+              Portal Admin
             </Link>
           </div>
         ) : session.role === "mahasiswa" ? (

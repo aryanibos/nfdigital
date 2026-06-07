@@ -8,10 +8,10 @@ const Footer = () => {
           {/* Logo & Copyright */}
           <div className="text-center md:text-left">
             <span className="text-xl font-extrabold text-foreground">
-              NF<span className="text-primary">Digital</span>Store
+              NF<span className="text-primary">Katalog</span>
             </span>
             <p className="text-sm text-muted-foreground mt-2">
-              © 2026 NFDigitalStore.
+              © 2026 NFKatalog.
             </p>
           </div>
 

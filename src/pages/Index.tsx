@@ -13,11 +13,11 @@ const Index = () => {
     <Layout>
       <Hero />
       <ProductGrid />
-      <HowItWorks />
+      {/* <HowItWorks />
       <Testimonials />
       <FAQ />
       <Newsletter />
-      <Features />
+      <Features /> */}
       <Footer />
     </Layout>
   );
