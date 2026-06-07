@@ -120,7 +120,7 @@ const ProductGrid = () => {
             Katalog <span className="text-gradient">Produk</span>
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Temukan aset digital berkualitas tinggi karya Mahasiswa Bisnis Digital STT NF.
+            Temukan produk berkualitas tinggi karya Mahasiswa Bisnis Digital STT NF.
           </p>
         </div>
 
