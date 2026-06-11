@@ -152,16 +152,6 @@ const Sidebar = ({ isOpen, onClose, isDesktopOpen = true }: SidebarProps) => {
               <GraduationCap className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform duration-200 group-hover:scale-110" />
               Portal Mahasiswa
             </Link>
-            <Link
-              to="/login?role=admin"
-              onClick={() => onClose()}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-muted-foreground hover:text-foreground hover:bg-secondary"
-              )}
-            >
-              <Lock className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform duration-200 group-hover:scale-110" />
-              Portal Admin
-            </Link>
           </div>
         ) : session.role === "mahasiswa" ? (
           /* LOGGED IN AS STUDENT */

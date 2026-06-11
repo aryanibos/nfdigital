@@ -216,7 +216,7 @@ const Admin = () => {
         description: "Silakan login terlebih dahulu untuk mengakses Panel Admin.",
         variant: "destructive",
       });
-      navigate("/login");
+      navigate("/login?role=admin");
       return;
     }
 
@@ -228,11 +228,11 @@ const Admin = () => {
           description: "Halaman ini hanya dapat diakses oleh Administrator.",
           variant: "destructive",
         });
-        navigate("/login");
+        navigate("/login?role=admin");
         return;
       }
     } catch (e) {
-      navigate("/login");
+      navigate("/login?role=admin");
       return;
     }
 

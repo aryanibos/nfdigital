@@ -252,21 +252,13 @@ const ProductDetail = () => {
             <div className="space-y-8">
               {/* Header */}
               <div>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <Badge className="bg-primary/10 text-primary border-0 hover:bg-primary/20 text-xs font-semibold px-3 py-1 rounded-full">
-                    {product.category}
-                  </Badge>
-                  {rawProduct?.jurusan && (
+                {rawProduct?.jurusan && (
+                  <div className="flex flex-wrap gap-2 mb-4">
                     <Badge className="bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80 text-xs font-semibold px-3 py-1 rounded-full">
                       {rawProduct.jurusan}
                     </Badge>
-                  )}
-                  {product.format && (
-                    <Badge className="bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80 text-xs font-semibold px-3 py-1 rounded-full">
-                      {product.format}
-                    </Badge>
-                  )}
-                </div>
+                  </div>
+                )}
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
                   {product.name}
                 </h1>

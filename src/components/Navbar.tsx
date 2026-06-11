@@ -114,16 +114,7 @@ const Navbar = ({ onToggleSidebar, isSidebarOpen = true }: NavbarProps) => {
             );
           })}
 
-          {/* Unified Dynamic Portal Access Button in Top Navbar */}
-          {!session ? (
-            <Link
-              to="/login"
-              className="px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/95 flex items-center gap-2 glow-primary-sm transition-all"
-            >
-              <LogIn className="w-4 h-4" />
-              <span>Masuk Portal</span>
-            </Link>
-          ) : (
+          {session && (
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsProfileOpen(true)}
