@@ -171,12 +171,33 @@ export const initializeProducts = (): Product[] => {
   return DEFAULT_PRODUCTS;
 };
 
-export const getProducts = (): Product[] => {
-  return initializeProducts();
+const API_URL = "/api/api.php";
+
+export const getProducts = async (): Promise<Product[]> => {
+  try {
+    const res = await fetch(`${API_URL}?action=get_products`);
+    if (!res.ok) throw new Error("Failed to fetch products");
+    return await res.json();
+  } catch (e) {
+    console.error("Failed to fetch products from API, falling back to local storage", e);
+    return initializeProducts();
+  }
 };
 
-export const saveProduct = (product: Product) => {
-  const current = getProducts();
+export const saveProduct = async (product: Product): Promise<void> => {
+  try {
+    const res = await fetch(`${API_URL}?action=save_product`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(product),
+    });
+    if (!res.ok) throw new Error("Failed to save product to API");
+  } catch (e) {
+    console.error("Failed to save product to API, falling back to local storage", e);
+  }
+  
+  // Keep local storage synchronized as fallback
+  const current = initializeProducts();
   const index = current.findIndex((p) => p.id === product.id);
   if (index !== -1) {
     current[index] = product;
@@ -186,8 +207,20 @@ export const saveProduct = (product: Product) => {
   localStorage.setItem("katalog_produk", JSON.stringify(current));
 };
 
-export const deleteProduct = (id: string) => {
-  const current = getProducts();
+export const deleteProduct = async (id: string): Promise<void> => {
+  try {
+    const res = await fetch(`${API_URL}?action=delete_product`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    if (!res.ok) throw new Error("Failed to delete product from API");
+  } catch (e) {
+    console.error("Failed to delete product from API, falling back to local storage", e);
+  }
+
+  // Keep local storage synchronized as fallback
+  const current = initializeProducts();
   const filtered = current.filter((p) => p.id !== id);
   localStorage.setItem("katalog_produk", JSON.stringify(filtered));
 };

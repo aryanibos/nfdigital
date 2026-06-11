@@ -21,77 +21,81 @@ const Hero = () => {
   const [latestProducts, setLatestProducts] = useState<any[]>([]);
 
   useEffect(() => {
-    // 1. Fetch Dynamic Stats
-    const saved = localStorage.getItem("homepage_stats");
-    if (saved) {
-      try { 
-        setHeroStats(JSON.parse(saved)); 
-      } catch (e) {}
-    } else {
-      // Calculate inline fallback from localStorage to prevent flash
-      const savedSubs = localStorage.getItem("student_submissions");
-      if (savedSubs) {
-        try {
-          const currentSubs = JSON.parse(savedSubs);
-          const approvedSubs = currentSubs.filter((sub: any) => sub.status === "Disetujui");
-          const totalFunding = approvedSubs.reduce((acc: number, sub: any) => acc + (Number(sub.fundingAmount) || 0), 0);
-          const uniqueNims = new Set(approvedSubs.map((sub: any) => sub.nim));
-          const totalUsaha = uniqueNims.size;
-          const totalProducts = approvedSubs.length;
+    const loadStatsAndProducts = async () => {
+      try {
+        // 1. Fetch Dynamic Stats from API
+        const catalogProds = await getProducts();
+        
+        // Fetch budget from API
+        const budgetRes = await fetch("/api/api.php?action=get_budget");
+        const budgetData = await budgetRes.json();
+        const initialBudget = Number(budgetData.initial_budget);
+
+        const totalSpent = catalogProds.reduce((acc, p) => acc + (Number(p.price) || 0), 0);
+        const remainingFunding = initialBudget - totalSpent;
+
+        // Unique students whose products are active in the catalog
+        const uniqueNims = new Set(catalogProds.map(p => p.nim).filter(Boolean));
+        const totalUsaha = uniqueNims.size;
+
+        // Total number of products in catalog
+        const totalProducts = catalogProds.length;
+
+        const formatCurrency = (num: number) => {
+          return new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+          }).format(num).replace(/,00$/, "");
+        };
+
+        setHeroStats({
+          totalPendanaan: formatCurrency(remainingFunding),
+          jumlahUsaha: totalUsaha.toString(),
+          jumlahProduk: totalProducts.toString()
+        });
+
+        // 2. Format and Set Latest Products
+        const sorted = [...catalogProds].sort((a, b) => b.createdAt - a.createdAt);
+        const formatted = sorted.slice(0, 3).map((prod) => {
+          let tag = prod.category.toUpperCase();
+          let tagColor = "bg-amber-50 text-amber-600 border-amber-100";
           
-          const formatCurrency = (num: number) => {
-            return new Intl.NumberFormat("id-ID", {
-              style: "currency",
-              currency: "IDR",
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0
-            }).format(num).replace(/,00$/, "");
+          if (prod.category.toLowerCase().includes("template")) {
+            tag = "TEMPLATE";
+            tagColor = "bg-blue-50 text-blue-600 border-blue-100";
+          } else if (prod.category.toLowerCase().includes("ebook") || prod.category.toLowerCase().includes("panduan")) {
+            tag = "E-BOOK";
+            tagColor = "bg-emerald-50 text-emerald-600 border-emerald-100";
+          } else if (prod.category.toLowerCase().includes("code") || prod.category.toLowerCase().includes("tool") || prod.category.toLowerCase().includes("ui")) {
+            tag = "TOOLS";
+            tagColor = "bg-purple-50 text-purple-600 border-purple-100";
+          }
+
+          const priceStr = prod.price && Number(prod.price) > 0 
+            ? `Rp ${Number(prod.price).toLocaleString("id-ID")}` 
+            : "";
+
+          return {
+            id: prod.id,
+            title: prod.name,
+            category: tag,
+            desc: prod.description,
+            image: prod.image,
+            price: priceStr,
+            tagColor: tagColor,
+            rawCategory: prod.category
           };
+        });
 
-          setHeroStats({
-            totalPendanaan: totalFunding > 0 ? formatCurrency(totalFunding) : "Rp 0",
-            jumlahUsaha: totalUsaha.toString(),
-            jumlahProduk: totalProducts.toString()
-          });
-        } catch (err) {}
+        setLatestProducts(formatted);
+      } catch (err) {
+        console.error("Failed to load stats or products in Hero Component", err);
       }
-    }
+    };
 
-    // 2. Fetch Latest Products
-    const allProducts = getProducts();
-    const sorted = [...allProducts].sort((a, b) => b.createdAt - a.createdAt);
-    const formatted = sorted.slice(0, 3).map((prod) => {
-      let tag = prod.category.toUpperCase();
-      let tagColor = "bg-amber-50 text-amber-600 border-amber-100";
-      
-      if (prod.category.toLowerCase().includes("template")) {
-        tag = "TEMPLATE";
-        tagColor = "bg-blue-50 text-blue-600 border-blue-100";
-      } else if (prod.category.toLowerCase().includes("ebook") || prod.category.toLowerCase().includes("panduan")) {
-        tag = "E-BOOK";
-        tagColor = "bg-emerald-50 text-emerald-600 border-emerald-100";
-      } else if (prod.category.toLowerCase().includes("code") || prod.category.toLowerCase().includes("tool") || prod.category.toLowerCase().includes("ui")) {
-        tag = "TOOLS";
-        tagColor = "bg-purple-50 text-purple-600 border-purple-100";
-      }
-
-      const priceStr = prod.price && Number(prod.price) > 0 
-        ? `Rp ${Number(prod.price).toLocaleString("id-ID")}` 
-        : "";
-
-      return {
-        id: prod.id,
-        title: prod.name,
-        category: tag,
-        desc: prod.description,
-        image: prod.image,
-        price: priceStr,
-        tagColor: tagColor,
-        rawCategory: prod.category
-      };
-    });
-
-    setLatestProducts(formatted);
+    loadStatsAndProducts();
   }, []);
 
   // Smooth scroll to products section

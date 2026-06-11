@@ -52,16 +52,21 @@ export default function ProfileModal({ isOpen, onClose, onProfileUpdated }: Prof
           const activeSession = JSON.parse(sessionStr);
           setSession(activeSession);
           
-          // Load accounts database
-          const accountsStr = localStorage.getItem("user_accounts");
-          const accounts = accountsStr ? JSON.parse(accountsStr) : {};
-          const userAccount = accounts[activeSession.username] || {};
-          
-          // Populate fields
-          setName(userAccount.name || activeSession.name || "");
-          setEmail(userAccount.email || (activeSession.role === "admin" ? "admin@nfdigital.ac.id" : `${activeSession.username}@student.nurulfikri.ac.id`));
-          setBio(userAccount.bio || (activeSession.role === "admin" ? "Administrator Utama Portal NF Katalog" : "Mahasiswa Bisnis Digital STT NF"));
-          setAvatar(userAccount.avatar || activeSession.avatar || "");
+          fetch(`/api/api.php?action=get_user_account&username=${activeSession.username}`)
+            .then((res) => res.json())
+            .then((userAccount) => {
+              setName(userAccount.name || activeSession.name || "");
+              setEmail(userAccount.email || "");
+              setBio(userAccount.bio || "");
+              setAvatar(userAccount.avatar || activeSession.avatar || "");
+            })
+            .catch((err) => {
+              console.error("Failed to load user account from API", err);
+              setName(activeSession.name || "");
+              setEmail(activeSession.role === "admin" ? "admin@nfdigital.ac.id" : `${activeSession.username}@student.nurulfikri.ac.id`);
+              setBio(activeSession.role === "admin" ? "Administrator Utama Portal NF Katalog" : "Mahasiswa Bisnis Digital STT NF");
+              setAvatar(activeSession.avatar || "");
+            });
         } catch (e) {
           console.error("Failed to load profile", e);
         }
@@ -119,46 +124,42 @@ export default function ProfileModal({ isOpen, onClose, onProfileUpdated }: Prof
       return;
     }
 
-    try {
-      const accountsStr = localStorage.getItem("user_accounts");
-      const accounts = accountsStr ? JSON.parse(accountsStr) : {};
-      
-      // Update account database
-      accounts[session.username] = {
-        ...accounts[session.username],
+    // Call API to update profile
+    fetch("/api/api.php?action=update_profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: session.username,
         name,
         email,
         bio,
         avatar,
-        password: accounts[session.username]?.password || (session.username === "admin" ? "admin" : "password")
-      };
-      
-      localStorage.setItem("user_accounts", JSON.stringify(accounts));
+        password: "" // Blank password preserves existing in DB
+      })
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Gagal menyimpan perubahan");
 
-      // Update active session
-      const updatedSession = {
-        ...session,
-        name,
-        avatar
-      };
-      localStorage.setItem("active_user_session", JSON.stringify(updatedSession));
+        localStorage.setItem("active_user_session", JSON.stringify(data.session));
 
-      toast({
-        title: "Profil Diperbarui! 🎉",
-        description: "Data profil Anda berhasil disimpan secara lokal.",
+        toast({
+          title: "Profil Diperbarui! 🎉",
+          description: "Data profil Anda berhasil disimpan ke database.",
+        });
+
+        if (onProfileUpdated) {
+          onProfileUpdated();
+        }
+        onClose();
+      })
+      .catch((err) => {
+        toast({
+          title: "Gagal Menyimpan ❌",
+          description: err.message || "Terjadi kesalahan saat menyimpan perubahan profil.",
+          variant: "destructive",
+        });
       });
-
-      if (onProfileUpdated) {
-        onProfileUpdated();
-      }
-      onClose();
-    } catch (error) {
-      toast({
-        title: "Gagal Menyimpan ❌",
-        description: "Terjadi kesalahan saat menyimpan perubahan profil.",
-        variant: "destructive",
-      });
-    }
   };
 
   const handleChangePassword = (e: React.FormEvent) => {
@@ -192,56 +193,43 @@ export default function ProfileModal({ isOpen, onClose, onProfileUpdated }: Prof
       return;
     }
 
-    try {
-      const accountsStr = localStorage.getItem("user_accounts");
-      const accounts = accountsStr ? JSON.parse(accountsStr) : {};
-      
-      const currentSavedPassword = accounts[session.username]?.password || (session.username === "admin" ? "admin" : "password");
+    // Call API to change password
+    fetch("/api/api.php?action=update_profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: session.username,
+        name,
+        email,
+        bio,
+        avatar,
+        currentPassword,
+        password: newPassword
+      })
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Gagal mengubah kata sandi");
 
-      // Super robust verification accepting saved password OR NIM/username OR 'password' as current password bypass
-      const isPasswordValid = 
-        currentPassword === currentSavedPassword || 
-        currentPassword === session.username || 
-        currentPassword === "password" ||
-        (session.username === "admin" && currentPassword === "admin");
+        localStorage.setItem("active_user_session", JSON.stringify(data.session));
 
-      if (!isPasswordValid) {
         toast({
-          title: "Kata Sandi Salah ❌",
-          description: "Kata sandi saat ini yang Anda masukkan salah.",
-          variant: "destructive",
+          title: "Kata Sandi Berhasil Diubah! 🔑",
+          description: "Silakan gunakan kata sandi baru untuk login berikutnya.",
         });
-        return;
-      }
 
-      // Update password in database
-      accounts[session.username] = {
-        ...accounts[session.username],
-        password: newPassword,
-        name: accounts[session.username]?.name || session.name,
-        email: accounts[session.username]?.email || email,
-        bio: accounts[session.username]?.bio || bio,
-        avatar: accounts[session.username]?.avatar || avatar
-      };
-
-      localStorage.setItem("user_accounts", JSON.stringify(accounts));
-
-      toast({
-        title: "Kata Sandi Berhasil Diubah! 🔑",
-        description: "Silakan gunakan kata sandi baru untuk login berikutnya.",
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setActiveTab("profile");
+      })
+      .catch((err) => {
+        toast({
+          title: "Gagal Mengubah Kata Sandi ❌",
+          description: err.message,
+          variant: "destructive"
+        });
       });
-
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setActiveTab("profile");
-    } catch (error) {
-      toast({
-        title: "Gagal Mengubah Kata Sandi ❌",
-        description: "Terjadi kesalahan sistem saat mengubah kata sandi.",
-        variant: "destructive",
-      });
-    }
   };
 
   return (

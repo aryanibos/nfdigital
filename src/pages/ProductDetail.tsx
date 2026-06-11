@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Tag, FileText, Layers, Star, Calendar, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -171,28 +172,49 @@ import { getProducts } from "@/lib/productsStore";
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [rawProduct, setRawProduct] = useState<any>(null);
   
-  const allProducts = getProducts();
-  const rawProduct = allProducts.find((p) => p.id === id);
-  const fallbackProduct = products.find((p) => p.id === id);
+  useEffect(() => {
+    getProducts().then((allProducts) => {
+      const foundRaw = allProducts.find((p) => p.id === id);
+      const fallbackProduct = products.find((p) => p.id === id);
 
-  const product = rawProduct ? {
-    id: rawProduct.id,
-    name: rawProduct.name,
-    category: rawProduct.category,
-    image: rawProduct.image || fallbackProduct?.image,
-    featured: rawProduct.featured,
-    longDescription: fallbackProduct?.longDescription || rawProduct.description,
-    features: fallbackProduct?.features || [
-      "Akses penuh selamanya",
-      "Dukungan teknis berkelanjutan",
-      "Kompatibel dengan perangkat standar",
-      "File siap pakai & mudah dimodifikasi",
-      `Dibuat oleh ${rawProduct.author || "Mahasiswa STT NF"}`
-    ],
-    format: fallbackProduct?.format || rawProduct.subcategory || "Digital Asset",
-    compatibility: fallbackProduct?.compatibility || (rawProduct.jurusan ? `Jurusan ${rawProduct.jurusan}` : "Semua Perangkat Modern"),
-  } : fallbackProduct;
+      const resolvedProduct = foundRaw ? {
+        id: foundRaw.id,
+        name: foundRaw.name,
+        category: foundRaw.category,
+        image: foundRaw.image || fallbackProduct?.image,
+        featured: foundRaw.featured,
+        longDescription: fallbackProduct?.longDescription || foundRaw.description,
+        features: fallbackProduct?.features || [
+          "Akses penuh selamanya",
+          "Dukungan teknis berkelanjutan",
+          "Kompatibel dengan perangkat standar",
+          "File siap pakai & mudah dimodifikasi",
+          `Dibuat oleh ${foundRaw.author || "Mahasiswa STT NF"}`
+        ],
+        format: fallbackProduct?.format || foundRaw.subcategory || "Digital Asset",
+        compatibility: fallbackProduct?.compatibility || (foundRaw.jurusan ? `Jurusan ${foundRaw.jurusan}` : "Semua Perangkat Modern"),
+      } : fallbackProduct;
+
+      setRawProduct(foundRaw);
+      setProduct(resolvedProduct);
+      setLoading(false);
+    });
+  }, [id]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 pt-32 pb-20 text-center">
+          <p className="text-muted-foreground animate-pulse">Memuat detail produk...</p>
+        </div>
+        <Footer />
+      </Layout>
+    );
+  }
 
   if (!product) {
     return (

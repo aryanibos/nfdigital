@@ -31,7 +31,7 @@ const Products = () => {
 
   // Load dynamic products from central store
   useEffect(() => {
-    setAllProducts(getProducts());
+    getProducts().then(setAllProducts);
   }, []);
 
   // Close suggestions when clicking outside

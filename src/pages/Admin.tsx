@@ -101,63 +101,59 @@ const Admin = () => {
   const [fundingAmount, setFundingAmount] = useState("");
 
   // Load dynamic data on mount
-  const refreshAllData = () => {
-    // Submissions
-    const savedSubs = localStorage.getItem("student_submissions");
-    let currentSubs: Submission[] = [];
-    if (savedSubs) {
-      currentSubs = JSON.parse(savedSubs);
+  const refreshAllData = async () => {
+    try {
+      // 1. Get Submissions from API
+      const subRes = await fetch("/api/api.php?action=get_submissions");
+      const subData = await subRes.json();
+      const currentSubs = subData.map((sub: any) => ({
+        ...sub,
+        status: sub.status === 'Pending' ? 'Menunggu' : (sub.status === 'Disetujui' ? 'Disetujui' : (sub.status === 'Ditolak' ? 'Ditolak' : sub.status))
+      }));
       setSubmissions(currentSubs);
-    } else {
-      const defaultSubs = [
-        { id: "koat-coffe", name: "koat coffe", description: "nanjaabddbbdbdibi", status: "Disetujui" as const, image: "", nim: "0110221001", jurusan: "Bisnis Digital", fundingAmount: 600000000 },
-        { id: "kebab-mahasiswa", name: "Kebab Mahasiswa", description: "Kebab lezat buatan mahasiswa.", status: "Disetujui" as const, image: "", nim: "0110221002", jurusan: "Bisnis Digital", fundingAmount: 300000000 },
-        { id: "jasa-desain", name: "Jasa Desain Poster", description: "Layanan desain grafis profesional.", status: "Disetujui" as const, image: "", nim: "0110221003", jurusan: "Bisnis Digital", fundingAmount: 100000000 }
-      ];
-      currentSubs = defaultSubs;
-      setSubmissions(defaultSubs);
-      localStorage.setItem("student_submissions", JSON.stringify(defaultSubs));
+
+      // 2. Get Products from API
+      const catalogProds = await getProducts();
+      setCatalogProducts(catalogProds);
+
+      // 3. Get Budget from API
+      const budgetRes = await fetch("/api/api.php?action=get_budget");
+      const budgetData = await budgetRes.json();
+      const initialBudget = Number(budgetData.initial_budget);
+
+      const totalSpent = catalogProds.reduce((acc, p) => acc + (Number(p.price) || 0), 0);
+      const remainingFunding = initialBudget - totalSpent;
+
+      // Unique students whose products are active in the catalog
+      const uniqueNims = new Set(catalogProds.map(p => p.nim).filter(Boolean));
+      const totalUsaha = uniqueNims.size;
+
+      // Total number of products in catalog (admin-created + approved submissions)
+      const totalProducts = catalogProds.length;
+
+      const formatCurrency = (num: number) => {
+        return new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        }).format(num).replace(/,00$/, "");
+      };
+
+      const calculatedStats = {
+        totalPendanaan: formatCurrency(remainingFunding),
+        jumlahUsaha: totalUsaha.toString(),
+        jumlahProduk: totalProducts.toString()
+      };
+      
+      setStats(calculatedStats);
+      localStorage.setItem("homepage_stats", JSON.stringify(calculatedStats));
+    } catch (e) {
+      console.error("Failed to refresh admin data", e);
     }
-
-    // Dynamic Catalog
-    setCatalogProducts(getProducts());
-
-    // Calculate dynamic stats based on new requirements:
-    const savedInitialBudget = localStorage.getItem("admin_initial_budget");
-    const initialBudget = savedInitialBudget !== null ? Number(savedInitialBudget) : 100000000;
-    
-    // Sum of all product prices currently in the catalog (approved student submissions + admin-created products)
-    const catalogProds = getProducts();
-    const totalSpent = catalogProds.reduce((acc, p) => acc + (Number(p.price) || 0), 0);
-    const remainingFunding = initialBudget - totalSpent;
-
-    // Unique students whose products are active in the catalog
-    const uniqueNims = new Set(catalogProds.map(p => p.nim).filter(Boolean));
-    const totalUsaha = uniqueNims.size;
-
-    // Total number of products in catalog (admin-created + approved submissions)
-    const totalProducts = catalogProds.length;
-
-    const formatCurrency = (num: number) => {
-      return new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-      }).format(num).replace(/,00$/, "");
-    };
-
-    const calculatedStats = {
-      totalPendanaan: formatCurrency(remainingFunding),
-      jumlahUsaha: totalUsaha.toString(),
-      jumlahProduk: totalProducts.toString()
-    };
-    
-    setStats(calculatedStats);
-    localStorage.setItem("homepage_stats", JSON.stringify(calculatedStats));
   };
 
-  const handleSaveInitialBudget = () => {
+  const handleSaveInitialBudget = async () => {
     const val = Number(initialBudgetInput);
     if (isNaN(val) || val <= 0) {
       toast({
@@ -168,21 +164,31 @@ const Admin = () => {
       return;
     }
     
-    const savedInitialBudget = localStorage.getItem("admin_initial_budget");
-    const currentBudget = savedInitialBudget !== null ? Number(savedInitialBudget) : 100000000;
-    const newBudget = currentBudget + val;
-    
-    localStorage.setItem("admin_initial_budget", newBudget.toString());
-    setInitialBudgetInput("");
-    
-    toast({
-      title: "Dana Berhasil Ditambahkan! 💰",
-      description: `Dana sebesar Rp ${val.toLocaleString("id-ID")} berhasil ditambahkan ke anggaran.`,
-    });
-    refreshAllData();
+    try {
+      const budgetRes = await fetch("/api/api.php?action=get_budget");
+      const budgetData = await budgetRes.json();
+      const currentBudget = Number(budgetData.initial_budget);
+      const newBudget = currentBudget + val;
+
+      await fetch("/api/api.php?action=update_budget", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initial_budget: newBudget })
+      });
+
+      setInitialBudgetInput("");
+      
+      toast({
+        title: "Dana Berhasil Ditambahkan! 💰",
+        description: `Dana sebesar Rp ${val.toLocaleString("id-ID")} berhasil ditambahkan ke anggaran.`,
+      });
+      refreshAllData();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const handleSaveDirectTotal = () => {
+  const handleSaveDirectTotal = async () => {
     const val = Number(newTotalInput);
     if (isNaN(val) || val < 0) {
       toast({
@@ -193,19 +199,28 @@ const Admin = () => {
       return;
     }
     
-    const catalogProds = getProducts();
-    const totalSpent = catalogProds.reduce((acc, p) => acc + (Number(p.price) || 0), 0);
-    const newBudget = val + totalSpent;
-    
-    localStorage.setItem("admin_initial_budget", newBudget.toString());
-    setIsEditTotalOpen(false);
-    setNewTotalInput("");
-    
-    toast({
-      title: "Total Pendanaan Diperbarui! 💰",
-      description: `Total pendanaan berhasil disesuaikan menjadi Rp ${val.toLocaleString("id-ID")}`,
-    });
-    refreshAllData();
+    try {
+      const catalogProds = await getProducts();
+      const totalSpent = catalogProds.reduce((acc, p) => acc + (Number(p.price) || 0), 0);
+      const newBudget = val + totalSpent;
+      
+      await fetch("/api/api.php?action=update_budget", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initial_budget: newBudget })
+      });
+
+      setIsEditTotalOpen(false);
+      setNewTotalInput("");
+      
+      toast({
+        title: "Total Pendanaan Diperbarui! 💰",
+        description: `Total pendanaan berhasil disesuaikan menjadi Rp ${val.toLocaleString("id-ID")}`,
+      });
+      refreshAllData();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   useEffect(() => {
@@ -239,48 +254,37 @@ const Admin = () => {
     refreshAllData();
   }, []);
 
-  const handleUpdateStatus = (id: string, newStatus: "Disetujui" | "Ditolak", fundingAmt?: number | null) => {
-    const savedSubs = localStorage.getItem("student_submissions");
-    const currentSubs: Submission[] = savedSubs ? JSON.parse(savedSubs) : submissions;
+  const handleUpdateStatus = async (id: string, newStatus: "Disetujui" | "Ditolak", fundingAmt?: number | null) => {
+    const targetSub = submissions.find(s => s.id === id);
+    const dbStatus = newStatus === "Disetujui" ? "Disetujui" : "Ditolak";
+    const price = fundingAmt !== undefined ? fundingAmt : null;
 
-    const updated = currentSubs.map(sub => 
-      sub.id === id ? { 
-        ...sub, 
-        status: newStatus, 
-        fundingAmount: newStatus === "Disetujui" ? (fundingAmt !== undefined ? fundingAmt : null) : null 
-      } : sub
-    );
+    try {
+      const res = await fetch("/api/api.php?action=update_submission_status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          status: dbStatus,
+          price
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal memperbarui status");
 
-    setSubmissions(updated);
-    localStorage.setItem("student_submissions", JSON.stringify(updated));
+      toast({
+        title: newStatus === "Disetujui" ? "Pengajuan Disetujui! 🎓" : "Pengajuan Ditolak ❌",
+        description: `Status pengajuan "${targetSub?.name}" telah diperbarui.`,
+      });
 
-    const targetSub = currentSubs.find(s => s.id === id);
-    if (targetSub && newStatus === "Disetujui") {
-      const newCatProduct: Product = {
-        id: targetSub.id,
-        name: targetSub.name,
-        category: "Template",
-        subcategory: targetSub.jurusan || "Bisnis Digital",
-        description: targetSub.description,
-        image: targetSub.image || "",
-        author: `Mahasiswa NIM ${targetSub.nim}`,
-        nim: targetSub.nim,
-        jurusan: targetSub.jurusan,
-        featured: false,
-        createdAt: Date.now(),
-        price: fundingAmt !== undefined ? fundingAmt : null
-      };
-      saveProduct(newCatProduct);
-    } else if (newStatus === "Ditolak") {
-      deleteProduct(id);
+      refreshAllData();
+    } catch (err: any) {
+      toast({
+        title: "Gagal Memperbarui ❌",
+        description: err.message,
+        variant: "destructive"
+      });
     }
-    
-    refreshAllData();
-    
-    toast({
-      title: newStatus === "Disetujui" ? "Pengajuan Disetujui! 🎓" : "Pengajuan Ditolak ❌",
-      description: `Status pengajuan "${targetSub?.name}" telah diperbarui.`,
-    });
   };
 
   const handleApproveClick = (id: string) => {
@@ -347,7 +351,7 @@ const Admin = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleSaveProduct = (e: React.FormEvent) => {
+  const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formProduct.name.trim() || !formProduct.author.trim()) return;
 
@@ -364,7 +368,7 @@ const Admin = () => {
       price: formProduct.price ? Number(formProduct.price) : null
     };
 
-    saveProduct(finalProduct);
+    await saveProduct(finalProduct);
     refreshAllData();
     setIsAddEditOpen(false);
 
@@ -374,28 +378,28 @@ const Admin = () => {
     });
   };
 
-  const handleDeleteProduct = (id: string) => {
+  const handleDeleteProduct = async (id: string) => {
     const confirmDelete = window.confirm("Apakah Anda yakin ingin menghapus produk ini dari katalog?");
     if (!confirmDelete) return;
 
-    deleteProduct(id);
-    
-    // Also update student submissions status if it is a student product
-    const savedSubs = localStorage.getItem("student_submissions");
-    if (savedSubs) {
-      const currentSubs: Submission[] = JSON.parse(savedSubs);
-      const updatedSubs = currentSubs.map(sub => 
-        sub.id === id ? { ...sub, status: "Ditolak" as const } : sub
-      );
-      localStorage.setItem("student_submissions", JSON.stringify(updatedSubs));
-      setSubmissions(updatedSubs);
-    }
+    try {
+      await deleteProduct(id);
+      
+      // Also update student submissions status if it is a student product in DB
+      await fetch("/api/api.php?action=update_submission_status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: "Ditolak" })
+      });
 
-    refreshAllData();
-    toast({
-      title: "Katalog Dihapus 🗑️",
-      description: "Produk berhasil dihapus dari katalog utama.",
-    });
+      refreshAllData();
+      toast({
+        title: "Katalog Dihapus 🗑️",
+        description: "Produk berhasil dihapus dari katalog utama.",
+      });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Stats are calculated dynamically on load and status updates

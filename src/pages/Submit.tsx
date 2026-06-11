@@ -93,19 +93,19 @@ const Submit = () => {
       }
       setSession(activeSession);
 
-      // Load submissions
-      const saved = localStorage.getItem("student_submissions");
-      let allSubs: Submission[] = [];
-      if (saved) {
-        allSubs = JSON.parse(saved);
-      } else {
-        allSubs = DEFAULT_SUBMISSIONS;
-        localStorage.setItem("student_submissions", JSON.stringify(DEFAULT_SUBMISSIONS));
-      }
-      
-      // Filter so students ONLY see their own submissions!
-      const filtered = allSubs.filter(sub => sub.nim === activeSession.nim);
-      setSubmissions(filtered);
+      // Load submissions via API
+      fetch(`/api/api.php?action=get_submissions&nim=${activeSession.nim}`)
+        .then((res) => res.json())
+        .then((data) => {
+          const formatted = data.map((sub: any) => ({
+            ...sub,
+            status: sub.status === 'Pending' ? 'Menunggu' : (sub.status === 'Disetujui' ? 'Disetujui' : (sub.status === 'Ditolak' ? 'Ditolak' : sub.status))
+          }));
+          setSubmissions(formatted);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch submissions", err);
+        });
     } catch (e) {
       navigate("/login");
     }
@@ -176,72 +176,70 @@ const Submit = () => {
 
     // Function to submit/update once image is converted to Base64
     const submitWithImage = (base64Image: string) => {
-      const saved = localStorage.getItem("student_submissions");
-      let allSubs: Submission[] = saved ? JSON.parse(saved) : DEFAULT_SUBMISSIONS;
+      const targetId = editingId || `submission-${Date.now()}`;
+      const payload = {
+        id: targetId,
+        name: formData.name,
+        description: formData.description,
+        status: "Pending", // Set as Pending in the DB (displays as Menunggu in frontend)
+        image: base64Image || previewImage,
+        nim: currentNim,
+        author: currentName,
+        jurusan: "Bisnis Digital",
+        price: null,
+        createdAt: Date.now()
+      };
 
-      if (editingId) {
-        // UPDATE MODE
-        const updatedAll = allSubs.map((sub) => {
-          if (sub.id === editingId) {
-            return {
-              ...sub,
-              name: formData.name,
-              description: formData.description,
-              status: "Menunggu" as const, // Reset status to Menunggu so admin reviews again
-              image: base64Image || previewImage // Use new image if uploaded, otherwise keep old
-            };
+      fetch("/api/api.php?action=add_submission", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+        .then(async (res) => {
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Gagal menyimpan pengajuan");
+
+          // Fetch fresh list from API
+          return fetch(`/api/api.php?action=get_submissions&nim=${currentNim}`);
+        })
+        .then((res) => res.json())
+        .then((data) => {
+          const formatted = data.map((sub: any) => ({
+            ...sub,
+            status: sub.status === 'Pending' ? 'Menunggu' : (sub.status === 'Disetujui' ? 'Disetujui' : (sub.status === 'Ditolak' ? 'Ditolak' : sub.status))
+          }));
+          setSubmissions(formatted);
+
+          if (editingId) {
+            toast({
+              title: "Pengajuan Diperbarui! ✏️",
+              description: "Perubahan produk Anda berhasil disimpan dan diajukan ulang.",
+            });
+            handleCancelEdit();
+          } else {
+            // Reset form
+            setFormData({
+              name: "",
+              description: "",
+              imageFile: null
+            });
+            setImagePreviewUrl("");
+            const fileInput = document.getElementById("product-image") as HTMLInputElement;
+            if (fileInput) fileInput.value = "";
+
+            toast({
+              title: "Pengajuan Terkirim! 🚀",
+              description: "Produk Anda telah diajukan ke Admin untuk ditinjau.",
+            });
           }
-          return sub;
+        })
+        .catch((err) => {
+          toast({
+            title: "Gagal Mengajukan ❌",
+            description: err.message,
+            variant: "destructive"
+          });
         });
-
-        localStorage.setItem("student_submissions", JSON.stringify(updatedAll));
-        
-        // Update local filtered list
-        const filtered = updatedAll.filter(sub => sub.nim === currentNim);
-        setSubmissions(filtered);
-        
-        toast({
-          title: "Pengajuan Diperbarui! ✏️",
-          description: "Perubahan produk Anda berhasil disimpan dan diajukan ulang.",
-        });
-
-        handleCancelEdit();
-      } else {
-        // CREATE MODE
-        const newSub: Submission = {
-          id: `submission-${Date.now()}`,
-          name: formData.name,
-          description: formData.description,
-          status: "Menunggu",
-          image: base64Image,
-          nim: currentNim,
-          jurusan: "Bisnis Digital",
-          fundingAmount: null
-        };
-
-        const updatedAll = [newSub, ...allSubs];
-        localStorage.setItem("student_submissions", JSON.stringify(updatedAll));
-
-        // Update local filtered list
-        setSubmissions([newSub, ...submissions]);
-
-        // Reset form
-        setFormData({
-          name: "",
-          description: "",
-          imageFile: null
-        });
-        setImagePreviewUrl("");
-
-        // Reset input file element
-        const fileInput = document.getElementById("product-image") as HTMLInputElement;
-        if (fileInput) fileInput.value = "";
-
-        toast({
-          title: "Pengajuan Terkirim! 🚀",
-          description: "Produk Anda telah diajukan ke Admin untuk ditinjau.",
-        });
-      }
     };
 
     if (formData.imageFile) {

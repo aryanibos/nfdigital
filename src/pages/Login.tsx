@@ -57,80 +57,40 @@ const Login = () => {
       }
     }
 
-    // Auth logic
-    const accountsStr = localStorage.getItem("user_accounts");
-    const accounts = accountsStr ? JSON.parse(accountsStr) : {};
-    
-    // Check if user already has an account
-    const existingAccount = accounts[normUsername] || accounts[username];
-    
-    if (existingAccount) {
-      if (existingAccount.password !== password) {
+    // Auth logic via API
+    fetch("/api/api.php?action=login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: username.trim(),
+        password: password.trim(),
+        role: isStudent ? "mahasiswa" : "admin"
+      })
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Gagal masuk");
+        }
+        
+        localStorage.setItem("active_user_session", JSON.stringify(data.session));
+        
+        toast({
+          title: data.session.role === "admin" ? "Login Admin Berhasil! 🔐" : "Login Mahasiswa Berhasil! 🎓",
+          description: data.session.role === "admin" 
+            ? "Selamat datang kembali di Panel Pengelola."
+            : `Selamat datang kembali, ${data.session.name}!`,
+        });
+        
+        navigate(data.session.role === "admin" ? "/admin" : "/submit");
+      })
+      .catch((err) => {
         toast({
           title: "Gagal Masuk ❌",
-          description: "Kata sandi salah untuk akun ini.",
+          description: err.message,
           variant: "destructive",
         });
-        return;
-      }
-      
-      const session = {
-        role: isNewAdmin ? "admin" : "mahasiswa",
-        username: isNewAdmin ? "admin" : username,
-        name: existingAccount.name || (isNewAdmin ? "Administrator Utama" : username),
-        nim: isNewAdmin ? "ADMIN" : (existingAccount.nim || username),
-        avatar: existingAccount.avatar || ""
-      };
-      localStorage.setItem("active_user_session", JSON.stringify(session));
-      
-      toast({
-        title: isNewAdmin ? "Login Admin Berhasil! 🔐" : "Login Mahasiswa Berhasil! 🎓",
-        description: isNewAdmin 
-          ? "Selamat datang kembali di Panel Pengelola."
-          : `Selamat datang kembali, ${session.name}!`,
       });
-      
-      navigate(isNewAdmin ? "/admin" : "/submit");
-      return;
-    }
-
-    // Default registration on first login
-    if (isNewAdmin && password !== "admin") {
-      toast({
-        title: "Gagal Masuk ❌",
-        description: "Kata sandi bawaan admin adalah 'admin'.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    const newSession = {
-      role: isNewAdmin ? "admin" : "mahasiswa",
-      username: isNewAdmin ? "admin" : username,
-      name: isNewAdmin ? "Administrator Utama" : `Mahasiswa ${username}`,
-      nim: isNewAdmin ? "ADMIN" : username,
-      avatar: ""
-    };
-    
-    accounts[newSession.username] = {
-      name: newSession.name,
-      nim: newSession.nim,
-      email: isNewAdmin ? "admin@nfdigital.ac.id" : `${newSession.username}@student.nurulfikri.ac.id`,
-      bio: isNewAdmin ? "Administrator Utama Portal NF Katalog" : "Mahasiswa Bisnis Digital STT NF",
-      avatar: "",
-      password: password
-    };
-    localStorage.setItem("user_accounts", JSON.stringify(accounts));
-    localStorage.setItem("active_user_session", JSON.stringify(newSession));
-    
-    toast({
-      title: isNewAdmin ? "Login Admin Berhasil! 🔐" : "Pendaftaran & Login Berhasil! 🎓",
-      description: isNewAdmin 
-        ? "Selamat datang kembali di Panel Pengelola."
-        : `Selamat datang, Mahasiswa ${newSession.username}! Sandi Anda telah didaftarkan.`,
-    });
-    
-    navigate(isNewAdmin ? "/admin" : "/submit");
   };
 
   return (
