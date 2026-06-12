@@ -26,7 +26,7 @@ const ProductGrid = () => {
 
   // Load products on mount and set up category filter listener
   useEffect(() => {
-    setProducts(getProducts());
+    getProducts().then(setProducts);
 
     const handleFilterCategory = (e: Event) => {
       const customEvt = e as CustomEvent<string>;
